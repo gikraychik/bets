@@ -1,7 +1,7 @@
 #! /bin/bash
 cd scripts/
 #bash wget.sh http://ru.leonbets.com/
-#bash delspaces.sh
+#bash delspaces.sh tmp/result.html tmp/nospaces.html
 #bash extract.sh
 d=$(date +%F)
 t=$(date +%H:%M:%S)
@@ -16,14 +16,27 @@ cd tmp/downloads/
 x="0"
 for name in *
 do
+	bash ../../delspaces.sh "$name" temp
+	mv temp "$name"
 	if [ -f "$name" ]
 	then
 		grep -o '<h1>[^<]*</h1>' $name | sed -e 's/<h1>\([^<]*\)<\/h1>/\1/g' >../name.txt
 		y=$(cat ../name.txt)
 		mkdir -p ../../../data/"$d"/"$t"/"$y"
-		
+		#grep -o '<a[[:space:]]*href="[^"]*"[[:space:]]*class="nou2">[[:space:]]*[^<]*</a>' "$name" | sed -e 's/<a[[:space:]]*href="[^"]*"[[:space:]]*class="nou2">[[:space:]]*\([^<]*\)<\/a>/\1/g' >../../../data/"$d"/"$t"/"$y"/"$x"
+		grep -o '<tr class="row1">[[:space:]]*<td><script>[^<]*</script></td>[[:space:]]*<td[[:space:]]*width="[^"]*">[[:space:]]*<strong>[[:space:]]*<a href="[^"]*" class="nou2">[[:space:]]*\([^<]*\)</a>[[:space:]]*</strong>[[:space:]]*</td>[[:space:]]*<td [^<]*<a[^<]*<strong>\([^<]*\)</strong></a>[[:space:]]*[^/]*/span></td>[[:space:]]*<td [^<]*<a[^<]*<strong>\([^<]*\)</strong></a>[[:space:]]*[^/]*/span></td>[[:space:]]*<td [^<]*<a[^<]*<strong>\([^<]*\)</strong></a>[[:space:]]*[^/]*/span></td>' "$name" >../tempor
+		amount=$(wc -l ../tempor | sed -e 's/\([^ ]*\) .*/\1/g')
+		i="1"
+		while (( $i < $amount))
+		do
+			tail -n 1 <../tempor | sed -e 's/<tr class="row1">[[:space:]]*<td><script>[^<]*<\/script><\/td>[[:space:]]*<td[[:space:]]*width="[^"]*">[[:space:]]*<strong>[[:space:]]*<a href="[^"]*" class="nou2">[[:space:]]*\([^<]*\)<\/a>[[:space:]]*<\/strong>[[:space:]]*<\/td>[[:space:]]*<td [^<]*<a[^<]*<strong>\([^<]*\)<\/strong><\/a>[[:space:]]*[^\/]*\/span><\/td>[[:space:]]*<td [^<]*<a[^<]*<strong>\([^<]*\)<\/strong><\/a>[[:space:]]*[^\/]*\/span><\/td>[[:space:]]*<td [^<]*<a[^<]*<strong>\([^<]*\)<\/strong><\/a>[[:space:]]*[^\/]*\/span><\/td>/\1\n\2\n\3\n\4/g' >../../../data/"$d"/"$t"/"$y"/"$i"
+			head -n -1 <../tempor >../headfile
+			mv ../headfile ../tempor
+			i=$(($i+1))
+		done
 		x=$(($x + 1))
 	fi
 done
+#bash ../../clear.sh
 
 cd ../../../
