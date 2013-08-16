@@ -1,17 +1,21 @@
 #! /bin/bash
+echo "*************************************Bets extraction*************************************"
 cd scripts/
-#bash wget.sh http://ru.leonbets.com/
-#bash delspaces.sh tmp/result.html tmp/nospaces.html
-#bash extract.sh
+mkdir -p tmp/
+bash wget.sh http://ru.leonbets.com/
+bash delspaces.sh tmp/result.html tmp/nospaces.html
+bash extract.sh
 d=$(date +%F)
 t=$(date +%H:%M:%S)
 mkdir -p ../data/"$d"/"$t"
 #Next follows data download
-#mkdir -p tmp/downloads
+mkdir -p tmp/downloads
 cd tmp/downloads/
-#echo "Starting download of files. It will take much time..."
-#wget -i ../addr -a ../../logs/wget_log
-#echo "Download complete."
+echo "Starting download of files. It will take much time..."
+wget -i ../addr -a ../../logs/wget_log
+echo "Download complete."
+echo "---------------------------------------------------------------------------"
+echo "Data extraction started..."
 #Next follows the data extraction
 x="0"
 for name in *
@@ -37,6 +41,14 @@ do
 		x=$(($x + 1))
 	fi
 done
-#bash ../../clear.sh
-
+echo "Data extraction done."
+echo "---------------------------------------------------------------------------"
+echo "Cleaning..."
+#Next follows cleaning
 cd ../../../
+rm -r scripts/tmp
+for x in data/"$d"/"$t"/*
+do
+	rmdir --ignore-fail-on-non-empty "$x"
+done
+echo "Done."
