@@ -712,3 +712,273 @@ Saving to: ‘tmp/result.html’
 
 2013-08-15 21:16:07 (92,1 KB/s) - ‘tmp/result.html’ saved [166613]
 
+--2013-08-16 14:42:08--  http://ru.leonbets.com/betoffer/1/6068
+Resolving ru.leonbets.com (ru.leonbets.com)... 69.172.200.167, 176.227.209.10
+Connecting to ru.leonbets.com (ru.leonbets.com)|69.172.200.167|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6068’
+
+     0K .......... .......... .......... .......... ..........  161K
+    50K .......... .......... .......... .......... ..........  251K
+   100K .......... .......... .......... .......... .......    51,3K=1,4s
+
+2013-08-16 14:42:11 (103 KB/s) - ‘6068’ saved [150933]
+
+--2013-08-16 14:42:11--  http://ru.leonbets.com/betoffer/1/6097
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6097’
+
+     0K .......... .......... .......... .......... .......... 43,8K
+    50K .......... .......... .......... .......... ..........  262K
+   100K .......... ......                                       209K=1,4s
+
+2013-08-16 14:42:12 (82,7 KB/s) - ‘6097’ saved [119505]
+
+--2013-08-16 14:42:12--  http://ru.leonbets.com/betoffer/1/8155
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8155’
+
+     0K .......... .......... .......... .......... ..........  241K
+    50K .......... .......... .......... .......... ..........  284K
+   100K .......... .......... .......... .......... ..........  284K
+   150K .......... .......... .......... ....                   351K=0,7s
+
+2013-08-16 14:42:13 (280 KB/s) - ‘8155’ saved [188815]
+
+--2013-08-16 14:42:13--  http://ru.leonbets.com/betoffer/1/8147
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8147’
+
+     0K .......... .......... .......... .......... ..........  413K
+    50K .......... .......... .......... ..                     249K=0,2s
+
+2013-08-16 14:42:13 (328 KB/s) - ‘8147’ saved [83995]
+
+--2013-08-16 14:42:13--  http://ru.leonbets.com/betoffer/1/8161
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8161’
+
+     0K .......... .......... .......... .......... ..........  359K
+    50K .......... .......... .......... .......... ..........  249K
+   100K .......... .......... .......... .......... ..........  251K
+   150K .......... .......... .......... ........               397K=0,6s
+
+2013-08-16 14:42:14 (296 KB/s) - ‘8161’ saved [192825]
+
+--2013-08-16 14:42:14--  http://ru.leonbets.com/betoffer/1/6194
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6194’
+
+     0K .......... .......... .......... .......... ..........  431K
+    50K .......... .......... .......... .......... ..........  249K
+   100K .......... .......... .......... .......... ..........  235K
+   150K .......... .......... .......... .......... ..........  299K
+   200K .......... .......... .......... .......... ..........  337K
+   250K .......... .......... ........--2013-08-16 14:43:20--  http://tmp/downloads/
+Resolving tmp (tmp)... --2013-08-16 14:43:30--  http://tmp/downloads/
+Resolving tmp (tmp)... failed: No such file or directory.
+wget: unable to resolve host address ‘tmp’
+--2013-08-16 14:43:40--  http://ru.leonbets.com/betoffer/1/6068
+Resolving ru.leonbets.com (ru.leonbets.com)... 69.172.200.167
+Connecting to ru.leonbets.com (ru.leonbets.com)|69.172.200.167|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6068’
+
+     0K .......... .......... .......... .......... .......... 94,9K
+    50K .......... .......... .......... .........--2013-08-16 14:49:26--  http://ru.leonbets.com/betoffer/1/6068
+Resolving ru.leonbets.com (ru.leonbets.com)... 176.227.209.10, 69.172.200.167
+Connecting to ru.leonbets.com (ru.leonbets.com)|176.227.209.10|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6068’
+
+     0K .......... .......... .......... .......... ..........  235K
+    50K .......... .......... .......... .......... ..........  529K
+   100K .......... .......... .......... .......... .......     522K=0,4s
+
+2013-08-16 14:49:27 (371 KB/s) - ‘6068’ saved [150919]
+
+--2013-08-16 14:49:27--  http://ru.leonbets.com/betoffer/1/6097
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6097’
+
+     0K .......... .......... .......... .......... ..........  538K
+    50K .......... .......... .......... .......... ..........  534K
+   100K .......... ......                                       968K=0,2s
+
+2013-08-16 14:49:27 (573 KB/s) - ‘6097’ saved [119489]
+
+--2013-08-16 14:49:27--  http://ru.leonbets.com/betoffer/1/8155
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8155’
+
+     0K .......... .......... .......... .......... ..........  379K
+    50K .......... .......... .......... .......... ..........  410K
+   100K .......... .......... .......... .......... ..........  877K
+   150K .......... .......... .......... ....                   491K=0,4s
+
+2013-08-16 14:49:28 (484 KB/s) - ‘8155’ saved [188801]
+
+--2013-08-16 14:49:28--  http://ru.leonbets.com/betoffer/1/8147
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8147’
+
+     0K .......... .......... .......... .......... ..........  145K
+    50K .......... .......... .......... ..                     249K=0,5s
+
+2013-08-16 14:49:28 (174 KB/s) - ‘8147’ saved [83987]
+
+--2013-08-16 14:49:28--  http://ru.leonbets.com/betoffer/1/8161
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8161’
+
+     0K .......... .......... .......... .......... ..........  230K
+    50K .......... .......... .......... .......... .......... 3,08M
+   100K .......... .......... .......... .......... ..........  489K
+   150K .......... .......... .......... ........               326K=0,5s
+
+2013-08-16 14:49:29 (415 KB/s) - ‘8161’ saved [192803]
+
+--2013-08-16 14:49:29--  http://ru.leonbets.com/betoffer/1/6194
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6194’
+
+     0K .......... .......... .......... .......... ..........  366K
+    50K .......... .......... .......... .......... ..........  260K
+   100K .......... .......... .......... .......... ..........  521K
+   150K .......... .......... .......... .......... ..........  260K
+   200K .......... .......... .......... .......... ..........  131K
+   250K .......... .......... .......... .......... .......... 44,8K
+   300K .......... .......... .......... .......... .......... 11,8K
+   350K ..                                                     77,8K=6,4s
+
+2013-08-16 14:49:36 (55,2 KB/s) - ‘6194’ saved [361163]
+
+--2013-08-16 14:49:36--  http://ru.leonbets.com/betoffer/1/8137
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8137’
+
+     0K ...--2013-08-16 14:49:52--  http://ru.leonbets.com/betoffer/1/6068
+Resolving ru.leonbets.com (ru.leonbets.com)... 176.227.209.10
+Connecting to ru.leonbets.com (ru.leonbets.com)|176.227.209.10|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6068.1’
+
+     0K .......... .......... .......... .......... ..........  120K
+    50K .......... .......... .......... .......... ..........  363K
+   100K .......... .......... .......... .......... .......     468K=0,7s
+
+2013-08-16 14:49:53 (224 KB/s) - ‘6068.1’ saved [150903]
+
+--2013-08-16 14:49:53--  http://ru.leonbets.com/betoffer/1/6097
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6097.1’
+
+     0K .......... .......... .......... .......... ..........  598K
+    50K .......... .......... .......... .......... ..........  580K
+   100K .......... ......                                       741K=0,2s
+
+2013-08-16 14:49:53 (607 KB/s) - ‘6097.1’ saved [119519]
+
+--2013-08-16 14:49:53--  http://ru.leonbets.com/betoffer/1/8155
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8155.1’
+
+     0K .......... .......... .......... .......... .......... 1,32M
+    50K .......... .......... .......... .......... ..........  501K
+   100K .......... .......... .......... .......... ..........  589K
+   150K .......... .......... .......... ....                  1,02M=0,3s
+
+2013-08-16 14:49:53 (724 KB/s) - ‘8155.1’ saved [188801]
+
+--2013-08-16 14:49:53--  http://ru.leonbets.com/betoffer/1/8147
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8147.1’
+
+     0K .......... .......... .......... .......... ..........  342K
+    50K .......... .......... .......... ..                    1,56M=0,2s
+
+2013-08-16 14:49:54 (494 KB/s) - ‘8147.1’ saved [83995]
+
+--2013-08-16 14:49:54--  http://ru.leonbets.com/betoffer/1/8161
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8161.1’
+
+     0K .......... .......... .......... .......... .......... 1,15M
+    50K .......... .......... .......... .......... ..........  598K
+   100K .......... .......... .......... .......... ..........  635K
+   150K .......... .......... .......... ........              1,17M=0,2s
+
+2013-08-16 14:49:54 (795 KB/s) - ‘8161.1’ saved [192811]
+
+--2013-08-16 14:49:54--  http://ru.leonbets.com/betoffer/1/6194
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘6194.1’
+
+     0K .......... .......... .......... .......... .......... 1,16M
+    50K .......... .......... .......... .......... ..........  419K
+   100K .......... .......... .......... .......... .......... 1,19M
+   150K .......... .......... .......... .......... ..........  627K
+   200K .......... .......... .......... .......... ..........  523K
+   250K .......... .......... .......... .......... ..........  498K
+   300K .......... .......... .......... .......... ..........  629K
+   350K ..                                                     1,19M=0,6s
+
+2013-08-16 14:49:55 (630 KB/s) - ‘6194.1’ saved [361155]
+
+--2013-08-16 14:49:55--  http://ru.leonbets.com/betoffer/1/8137
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘8137.1’
+
+     0K .......... .......... .......... .......... ..........  376K
+    50K .......... .......... .......... .......... .......... 1,62M
+   100K .......... .......... .......... .......... ..........  506K
+   150K .......... .......... .......... .......... ..........  496K
+   200K .......... .......... .......... .........              748K=0,4s
+
+2013-08-16 14:49:55 (576 KB/s) - ‘8137.1’ saved [244754]
+
+--2013-08-16 14:49:55--  http://ru.leonbets.com/betoffer/1/7419
+Reusing existing connection to ru.leonbets.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘7419’
+
+     0K .......... .......... .......... .......... ....
