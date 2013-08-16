@@ -2,6 +2,7 @@
 echo "*************************************Bets extraction*************************************"
 cd scripts/
 mkdir -p tmp/
+mkdir -p logs/
 bash wget.sh http://ru.leonbets.com/
 bash delspaces.sh tmp/result.html tmp/nospaces.html
 bash extract.sh
