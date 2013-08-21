@@ -13,7 +13,7 @@ mkdir -p ../data/"$d"/"$t"
 mkdir -p tmp/downloads
 cd tmp/downloads/
 echo "Starting download of files. It will take much time..."
-wget -i ../addr -a ../../logs/wget_log
+wget -i ../addr -a ../../logs/wget_log -T 300 -t 10
 echo "Download complete."
 echo "---------------------------------------------------------------------------"
 echo "Data extraction started..."
