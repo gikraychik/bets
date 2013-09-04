@@ -1,0 +1,3 @@
+#! /bin/bash
+wget "http://www.ligastavok.com/Topics/Events.aspx?st=33&t=2459"
+#lynx -source "http://www.ligastavok.com/Topics/Events.aspx?st=33&t=10317"
