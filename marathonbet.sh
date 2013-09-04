@@ -4,7 +4,7 @@ echo "*************************************Bets extraction**********************
 cd scripts/
 mkdir -p tmp/
 mkdir -p logs/
-bash wget.sh http://www.marathonbet.com/ru/betting/Football/
+#bash wget.sh http://www.marathonbet.com/ru/betting/Football/
 bash delspaces.sh tmp/result.html tmp/nospaces.html
 echo "Extraction started..."
 grep -o '<div class="member-name">[^<]*</div>' < tmp/nospaces.html | sed -e 's/<div class="member-name">\([^<]*\)<\/div>/\1/g' >>commands_soon
@@ -90,6 +90,15 @@ do
 	new+=("$line")
 done < new_coeff
 
+fil=$(cat filled | wc -l)
+emp=$(cat empty | wc -l)
+ks=$(cat empty | wc -l)
+sum=$((($fil+$emp)*10))
+if [ "$sum" -eq "$ks" ]
+then
+	echo "Error accured! Control sum differs."
+	exit 1
+fi 
 
 #for ((i=0; i<${#vals[*]};i++))
 #do
