@@ -38,6 +38,7 @@ cd ../../../../scripts/
 rm coeff
 rm empty
 rm filled
+rm -r tmp/
 
 echo "Extraction finished."
 echo "Done."
