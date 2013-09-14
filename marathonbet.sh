@@ -1,5 +1,4 @@
 #! /bin/bash
-#! /bin/bash
 echo "*************************************Bets extraction*************************************"
 cd scripts/
 mkdir -p tmp/
@@ -12,7 +11,9 @@ grep -o '<td class="date">[^<]*</td>' <tmp/nospaces.html  | sed -e 's/<td class=
 grep -o '<span class="selection-link coeff[^"]*">[^<]*</span>' <tmp/nospaces.html | sed -e 's/<span class="selection-link coeff[^"]*">\([^<]*\)<\/span>/\1/g' > coeff
 grep -o -n '<td class="js-price' < tmp/result.html | sed -e 's/^\([0-9][0-9]*\).*/\1/g' > filled
 grep -o -n 'td-min-width' < tmp/result.html | sed -e 's/^\([0-9][0-9]*\).*/\1/g' > empty
-.././merge.out
+cd ../
+./merge.out
+cd scripts/
 grep -o '(\([0-9.-+][0-9.-+]*\))<br/>' < tmp/result.html | sed -e 's/(\([0-9\.-+][0-9\.-+]*\))<br\/>/\1/g' > bonuses
 
 comm=$(cat commands | wc -l)
@@ -24,16 +25,19 @@ t=$(date +%H:%M:%S)
 if [ "$sum" -ne "$coeff" ]
 then
 	echo "Error accured! Control sum differs."
-	rm new_coeff
+	#rm new_coeff
 	exit 1
 fi
-cd marathonbet.com
 mkdir -p "$d"/"$t/marathonbet.com/"
 cd "$d"/"$t/marathonbet.com/"
 mv ../../../../scripts/commands commands
 mv ../../../../scripts/new_coeff coeff
 mv ../../../../scripts/bonuses bonuses
+mv ../../../../scripts/dates dates
 cd ../../../../scripts/
+rm coeff
+rm empty
+rm filled
 
 echo "Extraction finished."
 echo "Done."
