@@ -34,7 +34,8 @@ cd "$d"/"$t"
 mv ../../../../scripts/commands commands
 mv ../../../../scripts/new_coeff coeff
 mv ../../../../scripts/bonuses bonuses
-cd ../../../../scripts/
+#cd ../../../../scripts/
+../../../.././cm.out
 
 echo "Extraction finished."
 echo "Done."
