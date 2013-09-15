@@ -1,4 +1,8 @@
 #! /bin/bash
 # marathonbet.com
-bash resshed.sh&
-bash marathonbet.sh
+#bash resshed.sh&
+while true
+do
+	bash marathonbet.com/marathonbet.sh
+	sleep 1800
+done
