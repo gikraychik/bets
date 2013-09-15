@@ -24,7 +24,7 @@ d=$(date +%F)
 t=$(date +%H:%M:%S)
 if [ "$sum" -ne "$coeff" ]
 then
-	echo "Error accured! Control sum differs. $d $t" > ../scripts/logs/diffsum
+	echo "Error accured! Control sum differs. $d $t" >> ../scripts/logs/diffsum
 	echo "Error accured! Control sum differs! $d $t";
 	#rm new_coeff
 	exit 1
