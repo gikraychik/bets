@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-
+#include <math.h>
 using namespace std;
 
 vector<float> read_file(const char *path)
@@ -21,72 +21,91 @@ vector<float> read_file(const char *path)
 	}
 	return v;
 }
-
+bool hasElem(float f, vector <float> &v)
+{
+	float e = 0.0001;
+	for (int i = 0; i < v.size(); i++)
+	{
+		if (v[i] == f) { return true; }
+	}
+	return false;
+}
 int main(int argc, char **argv)
 {
 	ofstream f, g;
 	f.open("../scripts/new_coeff");
-	g.open("../scripts/bon_empty");
 	vector <float> coeff = read_file("../scripts/coeff");
 	vector <float> lines_filled = read_file("../scripts/filled");
 	vector <float> lines_empty = read_file("../scripts/empty");
+	vector <float> merged;
+	vector <float> bon_empty;
 	int i = 0;
 	int j = 0;
-	int k = -1;
 	while (true)
 	{
-		while (lines_filled[i] < lines_empty[j])
+		if ((i >= lines_filled.size()) || (j >= lines_empty.size())) { break; }
+		if (lines_filled[i] < lines_empty[j])
 		{
+			merged.push_back(lines_filled[i]);
 			f << coeff[i] << endl;
-			i++; k++;
-			if (i == lines_filled.size()) { break; }
+			i++;
 		}
-		if (j >= lines_empty.size()) { break; }
-		if (i >= lines_filled.size()) { break; }
-		//if (k % 10 >= 6) { g << lines_empty[j] << endl; }
-		while (lines_filled[i] > lines_empty[j])
+		else
 		{
+			merged.push_back(lines_empty[j]);
 			f << 0.0 << endl;
-			j++; k++;
-			if (k % 10 >= 6) { g << lines_empty[j] << endl; }
-			if (j == lines_empty.size()) { break; }
+			j++;
 		}
 	}
-	while (i < lines_filled.size())
+	for (int k = i; k < lines_filled.size(); k++)
 	{
-		f << coeff[i] << endl;
-		i++; k++;
+		merged.push_back(lines_filled[k]);
+		f << coeff[k] << endl;
+	}
+	for (int k = j; k < lines_empty.size(); k++)
+	{
+		merged.push_back(lines_empty[k]);
+		f << 0.0 << endl;
+	}
+	// merged now
+	//cout << merged.size() << endl;
+	for (int k = 0; k < merged.size(); k++)
+	{
+		if (k % 10 >= 6)
+		{
+			//cout << k << endl;
+			if (hasElem(merged[k], lines_empty)) { bon_empty.push_back(merged[k]); }
+		}
+	}
+	//proceeding bon_num && bin_empty
+	vector <float> bon_num = read_file("../scripts/bon_num");
+	vector <float> bonuses = read_file("../scripts/bonuses");
+	g.open("../scripts/new_bonuses");
+	i = 0;
+	j = 0;
+	while (true)
+	{
+		if ((i >= bon_num.size()) || (j >= bon_empty.size())) { break; }
+		if (bon_num[i] < bon_empty[j])
+		{
+			g << bonuses[i] << endl;
+			i++;
+		}
+		else
+		{
+			g << ";" << endl;
+			j++;
+		}
+	}
+	for (int k = i; k < bon_num.size(); k++)
+	{
+		g << bonuses[k] << endl;
+	}
+	for (int k = j; k < bon_empty.size(); k++)
+	{
+		g << ";" << endl;
 	}
 	f.close();
 	g.close();
-	f.open("../scripts/new_bonuses");
-	vector <float> bonuses = read_file("../scripts/bonuses");
-	vector <float> lin_filled = read_file("../scripts/bon_num");
-	vector <float> lin_empty = read_file("../scripts/bon_empty");
-	i = 0; j = 0;	
-	while (true)
-	{
-		while (lin_filled[i] < lin_empty[j])
-		{
-			f << bonuses[i] << endl;
-			i++;
-			if (i == lin_filled.size()) { break; }
-		}
-		if (j >= lin_empty.size()) { break; }
-		if (i >= lin_filled.size()) { break; }
-		//if (k % 10 >= 6) { g << lines_empty[j] << endl; }
-		while (lin_filled[i] > lin_empty[j])
-		{
-			f << ";" << endl;
-			j++;
-			if (j == lin_empty.size()) { break; }
-		}
-	}
-	while (i < lin_filled.size())
-	{
-		f << bonuses[i] << endl;
-		i++;
-	}
-	f.close();
 	return 0;
 }

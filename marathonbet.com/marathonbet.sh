@@ -26,7 +26,6 @@ if [ "$sum" -ne "$coeff" ]
 then
 	echo "Error accured! Control sum differs. $d $t" >> ../scripts/logs/diffsum
 	echo "Error accured! Control sum differs! $d $t";
-	#rm new_coeff
 	exit 1
 fi
 mkdir -p "$d"/"$t/marathonbet.com/"
@@ -36,7 +35,8 @@ mv ../../../../scripts/new_coeff coeff
 mv ../../../../scripts/new_bonuses bonuses
 mv ../../../../scripts/dates dates
 cd ../../../../scripts/
-rm coeff empty filled bon_num bon_empty bonuses
+rm coeff empty filled
+rm bon_num bonuses
 rm -r tmp/
 
 echo "Extraction finished."
