@@ -1,7 +1,7 @@
 #! /bin/bash
 # marathonbet.com
 echo "*************************************Bets extraction*************************************"
-#bash resshed.sh&
+bash resshed.sh&
 while true
 do
 	bash marathonbet.com/marathonbet.sh

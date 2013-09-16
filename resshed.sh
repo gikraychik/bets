@@ -3,7 +3,7 @@ d=$(date +%F)
 t=$(date +%H)
 while (true)
 do
-	if [ "$t" -eq "23" ]
+	if [ "$t" -eq "00" ]
 	then
 		bash marres.sh
 		sleep 3600
