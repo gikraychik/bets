@@ -1,6 +1,7 @@
 #! /bin/bash
 # marathonbet.com
 echo "*************************************Bets extraction*************************************"
+mkdir -p data/
 bash results/resshed.sh&
 while true
 do

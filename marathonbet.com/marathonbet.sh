@@ -3,7 +3,7 @@ echo "Processing marathonbet.com."
 cd scripts/
 mkdir -p tmp/
 mkdir -p logs/
-bash wget.sh http://www.marathonbet.com/ru/betting/Football/
+bash wget.sh http://www.marathonbet.com/ru/betting/Football/ tmp
 bash delspaces.sh tmp/result.html tmp/nospaces.html
 echo "Extraction started..."
 grep -o '<div class="[t]*[o]*[d]*[a]*[y]*[-]*member-name">[^<]*</div>' < tmp/nospaces.html | sed -e 's/<div class="[t]*[o]*[d]*[a]*[y]*[-]*member-name">\([^<]*\)<\/div>/\1/g' >commands
