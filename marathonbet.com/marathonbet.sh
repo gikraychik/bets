@@ -16,13 +16,31 @@ grep -o -n '(\([-0-9\.+][-0-9\.+]*\))<br/>' < tmp/result.html | sed -e 's/^\([0-
 cd ../marathonbet.com/
 ./merge.out
 cd ../scripts/
+dates=$(cat dates | wc -l)
 comm=$(cat commands | wc -l)
 coeff=$(cat new_coeff | wc -l)
-sum=$((5*$comm))
+bonuses=$(cat new_bonuses | wc -l)
+sum=$((2*$dates))
 cd ../data
 d=$(date +%F)
 t=$(date +%H:%M:%S)
+res=$((1))
+if [ "$sum" -ne "$comm" ]
+then
+	$res=0
+fi
+sum=$((4*$dates))
+if [ "$sum" -ne "$bonuses" ]
+then
+	res=0
+fi
+sum=$((10*$dates))
 if [ "$sum" -ne "$coeff" ]
+then
+	res=0
+fi
+un=$((1))
+if [ "$res" -ne "$un" ]
 then
 	echo "Error accured! Control sum differs. $d $t" >> ../scripts/logs/diffsum
 	echo "Error accured! Control sum differs! $d $t";
