@@ -19,7 +19,7 @@ public:
 	{
 		v[0][0] = x11; v[0][1] = x12; v[1][0] = x21; v[1][1] = x22;
 	}
-	Result(int **arr) : res1(NULL), res2(NULL)
+	Result(int arr[2][2]) : res1(NULL), res2(NULL)
 	{
 		for (int i=0, j=0; i < 2,j < 2; i++, j++) { v[i][j] = arr[i][j]; }
 	}
@@ -65,6 +65,12 @@ class StaticInfo
 public:
 	StaticInfo(Date &d, Time &t, Commands &c) : resdate(d), restime(t), cmds(c) {}
 	StaticInfo(void) : resdate(Date()), restime(Time()), cmds(Commands()) {}
+	void init(Date &d, Time &t, Commands &c)
+	{
+		resdate = d;
+		restime = t;
+		cmds = c;
+	}
 	Date resdate;
 	Time restime;
 	Commands cmds;
@@ -90,38 +96,73 @@ public:
 		ifstream file(path);
 		if (file.is_open())
 		{
-			while (1)
+			int d, m, y;
+			readDate(file, d, m, y);
+			int hours, minutes;
+			readTime(file, hours, minutes);
+			getline(file, ln);
+			const char *com1 = ln.data();
+			getline(file, ln);
+			const char *com2 = ln.data();
+			Date date(d, m, y);
+			Time time(hours, minutes);
+			Commands cmds(com1, com2);
+			stinf.init(date, time, cmds);  //initialization of StaticInfo field
+			int arr[2][2];
+			for (int i=0,j=0; i<2,j<2; i++,j++)
 			{
 				getline(file, ln);
-				int d = atoi(ln.data());
-				getline(file, ln);
-				int m = atoi(ln.data());
-				getline(file, ln);
-				int y = atoi(ln.data());
-				getline(file, ln);
-				int hours = atoi(ln.data());
-				getline(file, ln);
-				int minutes = atoi(ln.data());
-				getline(file, ln);
-				const char *com1 = ln.data();
-				getline(file, ln);
-				const char *com2 = ln.data();
-				Date date(d, m, y);
-				Time time(hours, minutes);
-				Commands cmds(com1, com2);
-				StaticInfo staticinfo(date, time, cmds);
-				int arr[2][2];
-				for (int i=0,j=0; i<2,j<2; i++,j++)
+				arr[i][j] = atoi(ln.data());
+			}
+			Result result(arr);
+			while (1)
+			{
+				int isOk = readDate(file, d, m, y);
+				if (!isOk) { break; }  //testing if end of file
+				readTime(file, hours, minutes);
+				vector<double> coeff(10, 0);
+				for (int i = 0; i < 10; i++)
 				{
 					getline(file, ln);
-					arr[i][j] = atoi(ln.data());
-				}							
+					coeff[i] = atof(ln.data());
+				}
+				vector<double> bonuses(10, 0);
+				for (int i = 0; i < 4; i++)
+				{
+					getline(file, ln);
+					bonuses[i] = atof(ln.data());
+				}
+				Date date(d, m, y);
+				Time time(hours, minutes);
+				Line line(date, time, coeff, bonuses);
+				lines.push_back(line);
 			}
 			file.close();
 		}
 	}
 	StaticInfo stinf;
 	vector<Line> lines;
+private:
+	int readDate(ifstream &file, int &d, int &m, int &y) const
+	{
+		string ln;
+		if (!getline(file, ln)) { return 0; }  //end of file
+		d = atoi(ln.data());
+		getline(file, ln);
+		m = atoi(ln.data());
+		getline(file, ln);
+		y = atoi(ln.data());
+		return 1;  //correct
+	}
+	int readTime(ifstream &file, int &hours, int &minutes) const
+	{
+		string ln;
+		if (!getline(file, ln)) { return 0; }  //end of file
+		hours = atoi(ln.data());
+		getline(file, ln);
+		minutes = atoi(ln.data());
+		return 1;  //correct
+	}
 };
 class Analis
 {
