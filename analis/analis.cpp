@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <cstdlib>
+#include <map>
 
 using namespace std;
 class Result
@@ -63,17 +64,19 @@ public:
 class StaticInfo
 {
 public:
-	StaticInfo(Date &d, Time &t, Commands &c) : resdate(d), restime(t), cmds(c) {}
-	StaticInfo(void) : resdate(Date()), restime(Time()), cmds(Commands()) {}
-	void init(Date &d, Time &t, Commands &c)
+	StaticInfo(Date &d, Time &t, Commands &c, Result &r) : resdate(d), restime(t), cmds(c), res(r) {}
+	StaticInfo(void) : resdate(Date()), restime(Time()), cmds(Commands()), res(Result()) {}
+	void init(Date &d, Time &t, Commands &c, Result &r)
 	{
 		resdate = d;
 		restime = t;
 		cmds = c;
+		res = r;
 	}
 	Date resdate;
 	Time restime;
 	Commands cmds;
+	Result res;
 };
 class Line
 {
@@ -89,7 +92,7 @@ public:
 class Match
 {
 public:
-	Match(void) : stinf(StaticInfo()), lines(vector<Line>()) {}
+	Match(void) : stinf(StaticInfo()), lines(vector<Line>()), delts(10, 0) {}
 	Match(const char *path)
 	{
 		string ln;
@@ -104,17 +107,17 @@ public:
 			const char *com1 = ln.data();
 			getline(file, ln);
 			const char *com2 = ln.data();
-			Date date(d, m, y);
-			Time time(hours, minutes);
-			Commands cmds(com1, com2);
-			stinf.init(date, time, cmds);  //initialization of StaticInfo field
 			int arr[2][2];
 			for (int i=0,j=0; i<2,j<2; i++,j++)
 			{
 				getline(file, ln);
 				arr[i][j] = atoi(ln.data());
 			}
+			Date date(d, m, y);
+			Time time(hours, minutes);
+			Commands cmds(com1, com2);
 			Result result(arr);
+			stinf.init(date, time, cmds, result);  //initialization of StaticInfo field
 			while (1)
 			{
 				int isOk = readDate(file, d, m, y);
@@ -139,9 +142,21 @@ public:
 			}
 			file.close();
 		}
+		Result res = stinf.res;
+		delts[0] = res.v[0][0] > res.v[0][1];
+		delts[1] = res.v[0][0] == res.v[0][1];
+		delts[2] = res.v[0][0] < res.v[0][1];
+		delts[3] = res.v[0][0] >= res.v[0][1];
+		delts[4] = res.v[0][0] != res.v[0][1];
+		delts[5] = res.v[0][0] <= res.v[0][1];
+		delts[6] = (res.v[0][0] + bonuses[0]) == res.v[0][1];
+		delts[7] = res.v[0][0] == (res.v[0][1] - bonuses[1]);
+		delts[8] = (res.v[0][0] + res.v[0][1]) < bonuses[2];
+		delts[9] = (res.v[0][0] + res.v[0][1]) > bonuses[3];
 	}
 	StaticInfo stinf;
 	vector<Line> lines;
+	vector<int> delts;
 private:
 	int readDate(ifstream &file, int &d, int &m, int &y) const
 	{
@@ -181,14 +196,37 @@ public:
 				games.push_back(Match((string("Matches/")+string(ent->d_name)).data()));
 			}
 		}
+		closedir(dir);
 	}
-	
+	void analis1(int mode) const
+	{
+		for (int j = 0; j < games.size(); j++)
+		{
+			Match match = games[j];
+			for (int i = 0; i < match.lines.size(); i++)
+			{
+				Line line = match.lines[i];
+				for (int k = 0; k < 10; k++)
+				{
+					/*map<double, int>::iterator itr = Pk.find(line.coeff[k]);
+					if (itr == Pk.end())  //not found
+					{
+						
+						Pk.insert(pair<double, int>(line.coeff[k], delta));
+					}*/
+				}
+			}			
+		}
+	}
 	vector<Match> games;
+	map<double, int> Pk;
+private:
+	
 };
 int main(int argc, char **argv)
 {
 	if (argc > 2) { return 1; }
 	const char *path = argv[1];
-	Match m(path);
+	
 	return 0;
 }
