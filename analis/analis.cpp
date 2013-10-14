@@ -36,6 +36,19 @@ public:
 	Date (const char *date) : d(0), m(0), y(0), date(string(date)) {}
 	Date (int d, int m, int y) : d(d), m(m), y(y), date(string("")) {}
 	Date() : d(0), m(0), y(0), date(string("")) {}
+	bool operator <(Date d)
+	{
+		if (y < d.y) { return true; }
+		else if (m < d.m) { return true; }
+		else return this->d < d.d;
+	}
+	bool operator ==(Date d)
+	{
+		return ((y == d.y) && (m == d.m) && (this->d == d.d));
+	}
+	bool operator <=(Date d) { return operator <(d) || operator ==(d); }
+	bool operator >(Date d) { return !operator<=(d); }
+	bool operator >=(Date d) { return !operator<(d); }
 	int d, m, y;
 	string date;
 private:
@@ -77,6 +90,24 @@ public:
 	Time restime;
 	Commands cmds;
 	Result res;
+};
+//typedef pair<Date, Time> Moment;
+class Moment
+{
+public:
+    Moment(Date &d, Time &t) : date(d), time(t) {}
+    bool operator <(Moment &moment)
+    {
+        if (date < moment.date) { return true; }
+        else if (date > moment.date) { return false; }
+        else
+        {
+            if (time < moment.time) { return true; }
+            else (time > moment.time) { return false; }
+        }
+    }
+    Date date;
+    Time time;
 };
 class Line
 {
@@ -143,16 +174,60 @@ public:
 			file.close();
 		}
 		Result res = stinf.res;
-		delts[0] = res.v[0][0] > res.v[0][1];
-		delts[1] = res.v[0][0] == res.v[0][1];
-		delts[2] = res.v[0][0] < res.v[0][1];
-		delts[3] = res.v[0][0] >= res.v[0][1];
-		delts[4] = res.v[0][0] != res.v[0][1];
-		delts[5] = res.v[0][0] <= res.v[0][1];
-		delts[6] = (res.v[0][0] + bonuses[0]) == res.v[0][1];
-		delts[7] = res.v[0][0] == (res.v[0][1] - bonuses[1]);
-		delts[8] = (res.v[0][0] + res.v[0][1]) < bonuses[2];
-		delts[9] = (res.v[0][0] + res.v[0][1]) > bonuses[3];
+	}
+	bool bet_won(int kind)
+	{
+		Result res = stinf.res;
+		vector <double> bonuses(lines[0].bonuses);  // предположили, что бонусы не изменяются на протяжении всей игры. Нужно проверить!
+		if (kind == 0) { return res.v[0][0] > res.v[0][1]; }
+		else if (kind == 1) { return res.v[0][0] == res.v[0][1]; }
+		else if (kind == 2) { return res.v[0][0] < res.v[0][1]; }
+		else if (kind == 3) { return res.v[0][0] >= res.v[0][1]; }
+		else if (kind == 4) { return res.v[0][0] != res.v[0][1]; }
+		else if (kind == 5) { return res.v[0][0] <= res.v[0][1]; }
+		else if (kind == 6) { return (res.v[0][0] + bonuses[0]) == res.v[0][1]; }
+		else if (kind == 7) { return res.v[0][0] == (res.v[0][1] - bonuses[1]); }
+		else if (kind == 8) { return (res.v[0][0] + res.v[0][1]) < bonuses[2]; }
+		else if (kind == 9) { return (res.v[0][0] + res.v[0][1]) > bonuses[3]; }
+		else return -1;
+	}
+	vector <double> get_coeff(int kind) const  //возвращает все коэффиценты на матч типа номер kind; 0<=kind<=9
+	{
+		vector <double> v;
+		for (int i = 0; i < lines.size(); i++)
+		{
+			v.push_back(lines[i].coeff[kind]);
+		}
+		return v;
+	}
+	double max(vector<double> &v) const
+	{
+		double max = -1000;
+		for (int i = 0; i < v.size(); i++)
+		{
+			if (v[i] > max) { max = v[i]; }
+		}
+		return max;
+	}
+	double min(vector<double> &v) const
+	{
+		double min = 1000;
+		for (int i = 0; i < v.size(); i++)
+		{
+			if (v[i] < min) { min = v[i]; }
+		}
+		return min;
+	}
+	double Mcoeff(int kind)
+	{
+		vector<double> v = get_coeff(kind);
+		double sum = 0.0;
+		for (int i = 0; i < v.size(); i++)
+		{
+			sum += v[i];
+		}
+		if (v.size() == 0) { return -1; }
+		return sum / v.size();
 	}
 	StaticInfo stinf;
 	vector<Line> lines;
@@ -198,7 +273,7 @@ public:
 		}
 		closedir(dir);
 	}
-	void analis1(int mode) const
+	/*void analis1(int mode) const
 	{
 		for (int j = 0; j < games.size(); j++)
 		{
@@ -208,25 +283,47 @@ public:
 				Line line = match.lines[i];
 				for (int k = 0; k < 10; k++)
 				{
-					/*map<double, int>::iterator itr = Pk.find(line.coeff[k]);
-					if (itr == Pk.end())  //not found
-					{
-						
-						Pk.insert(pair<double, int>(line.coeff[k], delta));
-					}*/
+					
 				}
 			}			
+		}
+	}*/
+	void analis2(int kind) const  //анализирует коэффиценты типа kind 
+	{
+		cout << "Вывод всех коэффицентов типа kind = " << kind << ":" << endl;
+		for (int i = 0; i < games.size(); i++)
+		{
+			vector <double> coeff = games[i].get_coeff(kind);
+			print(coeff);
+			cout << "Максимумумом является коэффицент: " << games[i].max(coeff) << endl;
+			cout << "Минимумом является коэффицент: " << games[i].min(coeff) << endl;
+		}
+		bool all_bonuses_eq = true;
+		for (int i = 0; i < games.size(); i++)
+		{
+			Match m = games[i];
+			for (int k = 0; k < m.lines.size(); k++)
+			{
+				//lol
+			}
 		}
 	}
 	vector<Match> games;
 	map<double, int> Pk;
 private:
-	
+	void print(vector<double> &v) const
+	{
+		for (int i = 0; i < v.size(); i++)
+		{
+			cout << v[i] << " ";
+		}
+		cout << endl;
+	}
 };
 int main(int argc, char **argv)
 {
 	if (argc > 2) { return 1; }
 	const char *path = argv[1];
-	
+
 	return 0;
 }
