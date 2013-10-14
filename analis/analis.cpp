@@ -63,11 +63,11 @@ public:
 	Time (int h, int m, int s) : h(h), m(m), s(s), time(string("")) {}
 	Time (int h, int m) : h(h), m(m), s(0), time(string("")) {}
 	Time (void) : h(0), m(0), s(0), time(string("")) {}
-    int seconds(void) const
+    inline int seconds(void) const
     {
         return 3600 * h + 60 * m + s;
     }
-    bool operator <(Time t)
+    inline bool operator <(Time t) const
     {
         return seconds() < t.seconds();
     }
@@ -243,6 +243,18 @@ public:
 		if (v.size() == 0) { return -1; }
 		return sum / v.size();
 	}
+    bool bonuses_eq(void) const  //это нужно для анализа 2
+    {
+        int b0 = lines[0].bonuses[0];
+        int b1 = lines[0].bonuses[1];
+        int b2 = lines[0].bonuses[2];
+        int b3 = lines[0].bonuses[3];
+        for (int i = 1; i < lines.size(); i++)
+        {
+            if (!((lines[i].bonuses[0] == b0) && (lines[i].bonuses[1] == b1) && (lines[i].bonuses[2] == b2) && (lines[i].bonuses[3] == b3))) { return false; }
+        }
+        return true;
+    }
 	StaticInfo stinf;
 	vector<Line> lines;
 	vector<int> delts;
@@ -312,23 +324,23 @@ public:
 			cout << "Максимумумом является коэффицент: " << games[i].max(coeff) << endl;
 			cout << "Минимумом является коэффицент: " << games[i].min(coeff) << endl;
 		}
+        cout << "" << endl;
 		bool all_bonuses_eq = true;
 		for (int i = 0; i < games.size(); i++)
 		{
-			Match m = games[i];
-			for (int k = 0; k < m.lines.size(); k++)
-			{
-				//lol
-			}
+            if (!games[i].bonuses_eq()) { all_bonuses_eq = false; }
 		}
+        cout << "Для каждого матча бонусы являются постоянными: " << all_bonuses_eq << endl;
+        cout << "" << endl;
 	}
 	vector<Match> games;
 	map<double, int> Pk;
 private:
-	void print(vector<double> &v) const
+	void print(vector<double> &v, int amount = 10) const
 	{
 		for (int i = 0; i < v.size(); i++)
 		{
+            if (i % amount == 0) { cout << endl; }
 			cout << v[i] << " ";
 		}
 		cout << endl;
