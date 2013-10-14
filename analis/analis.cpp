@@ -30,6 +30,7 @@ public:
 private:
 	void transform(void);
 };
+
 class Date
 {
 public:
@@ -37,12 +38,13 @@ public:
 	Date (int d, int m, int y) : d(d), m(m), y(y), date(string("")) {}
 	Date() : d(0), m(0), y(0), date(string("")) {}
 	bool operator <(Date d)
-	{
-		if (y < d.y) { return true; }
-		else if (m < d.m) { return true; }
-		else return this->d < d.d;
-	}
-	bool operator ==(Date d)
+    {
+        if (y < d.y) { return true; } else if (y > d.y) { return false; }
+        if (m < d.m) { return true; } else if (m > d.m) { return false; }
+        if (this->d < d.d) { return true; } else if (this->d > d.d) { return false; }
+        return false;
+    }
+    bool operator ==(Date d)
 	{
 		return ((y == d.y) && (m == d.m) && (this->d == d.d));
 	}
@@ -61,6 +63,18 @@ public:
 	Time (int h, int m, int s) : h(h), m(m), s(s), time(string("")) {}
 	Time (int h, int m) : h(h), m(m), s(0), time(string("")) {}
 	Time (void) : h(0), m(0), s(0), time(string("")) {}
+    int seconds(void) const
+    {
+        return 3600 * h + 60 * m + s;
+    }
+    bool operator <(Time t)
+    {
+        return seconds() < t.seconds();
+    }
+    bool operator ==(Time t) { return seconds() == t.seconds(); }
+    bool operator <=(Time t) { return operator <(t) || operator ==(t); }
+    bool operator >(Time t) { return ! operator <=(t); }
+    bool operator >=(Time t) { return ! operator <(t); }
 	int h, m, s;
 	string time;
 private:
@@ -96,16 +110,16 @@ class Moment
 {
 public:
     Moment(Date &d, Time &t) : date(d), time(t) {}
-    bool operator <(Moment &moment)
+    bool operator <(Moment m)
     {
-        if (date < moment.date) { return true; }
-        else if (date > moment.date) { return false; }
-        else
-        {
-            if (time < moment.time) { return true; }
-            else (time > moment.time) { return false; }
-        }
+        if (date < m.date) { return true; } else { return false; }
+        if (time < m.time) { return true; } else { return false; }
+        return false;
     }
+    bool operator ==(Moment m) { return (date == m.date) && (time == m.time); }
+    bool operator <= (Moment m) { return operator <(m) || operator ==(m); }
+    bool operator >(Moment m) { return ! operator <=(m); }
+    bool operator >=(Moment m) { return ! operator <(m); }
     Date date;
     Time time;
 };
