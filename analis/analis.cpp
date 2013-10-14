@@ -14,7 +14,7 @@ class Result
 public:
 	Result(void) : res1(NULL), res2(NULL)
 	{
-		for (int i = 0, j = 0; i<2,j<2; i++,j++) { v[i][j] = 0; }
+		v[0][0] = 0; v[0][1] = 0; v[1][0] = 0; v[1][1] = 0;
 	}
 	Result(int x11, int x12, int x21, int x22) : res1(NULL), res2(NULL)
 	{
@@ -22,7 +22,7 @@ public:
 	}
 	Result(int arr[2][2]) : res1(NULL), res2(NULL)
 	{
-		for (int i=0, j=0; i < 2,j < 2; i++, j++) { v[i][j] = arr[i][j]; }
+		v[0][0] = arr[0][0]; v[0][1] = arr[0][1]; v[1][0] = arr[1][0]; v[1][1] = arr[1][1];
 	}
 	int v[2][2];
 	const char *res1;
@@ -137,7 +137,7 @@ public:
 class Match
 {
 public:
-	Match(void) : stinf(StaticInfo()), lines(vector<Line>()), delts(10, 0) {}
+	Match(void) : stinf(StaticInfo()), lines(vector<Line>()) {}
 	Match(const char *path)
 	{
 		string ln;
@@ -146,17 +146,20 @@ public:
 		{
 			int d, m, y;
 			readDate(file, d, m, y);
-			int hours, minutes;
+			int hours, minutes, seconds;
 			readTime(file, hours, minutes);
 			getline(file, ln);
-			const char *com1 = ln.data();
+			const char *com1 = strdup(ln.data());
 			getline(file, ln);
-			const char *com2 = ln.data();
+			const char *com2 = strdup(ln.data());
 			int arr[2][2];
-			for (int i=0,j=0; i<2,j<2; i++,j++)
-			{
-				getline(file, ln);
-				arr[i][j] = atoi(ln.data());
+			for (int i = 0; i < 2; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+				    getline(file, ln);
+				    arr[i][j] = atoi(ln.data());
+                }
 			}
 			Date date(d, m, y);
 			Time time(hours, minutes);
@@ -167,27 +170,26 @@ public:
 			{
 				int isOk = readDate(file, d, m, y);
 				if (!isOk) { break; }  //testing if end of file
-				readTime(file, hours, minutes);
+				readTime(file, hours, minutes, seconds);
 				vector<double> coeff(10, 0);
 				for (int i = 0; i < 10; i++)
 				{
 					getline(file, ln);
 					coeff[i] = atof(ln.data());
 				}
-				vector<double> bonuses(10, 0);
+				vector<double> bonuses(4, 0);
 				for (int i = 0; i < 4; i++)
 				{
 					getline(file, ln);
 					bonuses[i] = atof(ln.data());
 				}
 				Date date(d, m, y);
-				Time time(hours, minutes);
+				Time time(hours, minutes, seconds);
 				Line line(date, time, coeff, bonuses);
 				lines.push_back(line);
 			}
 			file.close();
 		}
-		Result res = stinf.res;
 	}
 	bool bet_won(int kind)
 	{
@@ -257,7 +259,6 @@ public:
     }
 	StaticInfo stinf;
 	vector<Line> lines;
-	vector<int> delts;
 private:
 	int readDate(ifstream &file, int &d, int &m, int &y) const
 	{
@@ -279,6 +280,17 @@ private:
 		minutes = atoi(ln.data());
 		return 1;  //correct
 	}
+    int readTime(ifstream &file, int &hours, int &minutes, int &seconds)
+    {
+        string ln;
+		if (!getline(file, ln)) { return 0; }  //end of file
+		hours = atoi(ln.data());
+		getline(file, ln);
+		minutes = atoi(ln.data());
+        getline(file, ln);
+        seconds = atoi(ln.data());
+		return 1;  //correct
+    }
 };
 class Analis
 {
@@ -350,6 +362,14 @@ int main(int argc, char **argv)
 {
 	if (argc > 2) { return 1; }
 	const char *path = argv[1];
-
-	return 0;
+    path = "Matches/4";
+    Match m(path);
+    Line l = m.lines[1];
+    cout << l.time.s << endl;
+    cout << "Size: " << l.bonuses.size() << endl;
+    for (int i = 0; i < l.bonuses.size(); i++)
+    {
+        cout << l.bonuses[i] << " " << endl;
+    }
+    return 0;
 }
