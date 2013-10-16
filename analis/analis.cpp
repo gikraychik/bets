@@ -247,10 +247,10 @@ public:
 	}
     bool bonuses_eq(void) const  //это нужно для анализа 2
     {
-        int b0 = lines[0].bonuses[0];
-        int b1 = lines[0].bonuses[1];
-        int b2 = lines[0].bonuses[2];
-        int b3 = lines[0].bonuses[3];
+        double b0 = lines[0].bonuses[0];
+        double b1 = lines[0].bonuses[1];
+        double b2 = lines[0].bonuses[2];
+        double b3 = lines[0].bonuses[3];
         for (int i = 1; i < lines.size(); i++)
         {
             if (!((lines[i].bonuses[0] == b0) && (lines[i].bonuses[1] == b1) && (lines[i].bonuses[2] == b2) && (lines[i].bonuses[3] == b3))) { return false; }
@@ -311,49 +311,64 @@ public:
 		}
 		closedir(dir);
 	}
-	/*void analis1(int mode) const
-	{
-		for (int j = 0; j < games.size(); j++)
-		{
-			Match match = games[j];
-			for (int i = 0; i < match.lines.size(); i++)
-			{
-				Line line = match.lines[i];
-				for (int k = 0; k < 10; k++)
-				{
-					
-				}
-			}			
-		}
-	}*/
 	void analis2(int kind) const  //анализирует коэффиценты типа kind 
 	{
 		cout << "Вывод всех коэффицентов типа kind = " << kind << ":" << endl;
+        double delta = -1000.0;
 		for (int i = 0; i < games.size(); i++)
 		{
+            cout << "*********************************" << endl;
 			vector <double> coeff = games[i].get_coeff(kind);
+            cout << "Матч: " << games[i].stinf.resdate.d << "-" << games[i].stinf.resdate.m << "-" << games[i].stinf.resdate.y << " ";
+            cout << games[i].stinf.restime.h << ":" << games[i].stinf.restime.m << endl;
+            cout << games[i].stinf.cmds.first << "-" << games[i].stinf.cmds.second << endl;
 			print(coeff);
-			cout << "Максимумумом является коэффицент: " << games[i].max(coeff) << endl;
-			cout << "Минимумом является коэффицент: " << games[i].min(coeff) << endl;
-		}
+            double min = games[i].min(coeff);
+            double max = games[i].max(coeff);
+			cout << "Максимумумом является коэффицент: " << max << endl;
+			cout << "Минимумом является коэффицент: " << min << endl;
+            if ((max - min) > delta) { delta = max - min; }
+            //cout << "*********************************" << endl;
+            cout << "" << endl;
+        }
         cout << "" << endl;
-		bool all_bonuses_eq = true;
+        cout << "Наибольшая дельта (max - min): " << delta << endl;
+		/*bool all_bonuses_eq = true;
 		for (int i = 0; i < games.size(); i++)
 		{
-            if (!games[i].bonuses_eq()) { all_bonuses_eq = false; }
+           // if (!games[i].bonuses_eq()) { all_bonuses_eq = false; }
+           cout << games[i].bonuses_eq() << endl;
 		}
-        cout << "Для каждого матча бонусы являются постоянными: " << all_bonuses_eq << endl;
+        cout << "Для каждого матча бонусы являются постоянными: " << all_bonuses_eq << endl;*/
         cout << "" << endl;
 	}
+    void analis3(int kind) const  //анализирует бонусы
+    {
+        bool all_bonuses_eq = true;
+        for (int i = 0; i < games.size(); i++)
+        {
+            if (!games[i].bonuses_eq())
+            {
+                all_bonuses_eq = false;
+                for (int j = 0; j < games[i].lines.size(); j++)
+                {
+                    for (int k = 0; k < 4; k++) { cout.width(6); cout << games[i].lines[j].bonuses[k]; }
+                    cout << endl;
+                }
+                cout << "*******************************" << endl;
+            }
+        }
+    }
 	vector<Match> games;
 	map<double, int> Pk;
 private:
 	void print(vector<double> &v, int amount = 10) const
 	{
-		for (int i = 0; i < v.size(); i++)
+		for (int i = 1; i < v.size()+1; i++)
 		{
             if (i % amount == 0) { cout << endl; }
-			cout << v[i] << " ";
+            cout.width(5);
+			cout << v[i-1];
 		}
 		cout << endl;
 	}
@@ -362,14 +377,16 @@ int main(int argc, char **argv)
 {
 	if (argc > 2) { return 1; }
 	const char *path = argv[1];
-    path = "Matches/4";
-    Match m(path);
+    path = "Matches/";
+    /*Match m(path);
     Line l = m.lines[1];
     cout << l.time.s << endl;
     cout << "Size: " << l.bonuses.size() << endl;
     for (int i = 0; i < l.bonuses.size(); i++)
     {
         cout << l.bonuses[i] << " " << endl;
-    }
+    }*/
+    Analis anal(path);
+    anal.analis3(0);
     return 0;
 }
