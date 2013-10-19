@@ -51,6 +51,24 @@ public:
 	bool operator <=(Date d) { return operator <(d) || operator ==(d); }
 	bool operator >(Date d) { return !operator<=(d); }
 	bool operator >=(Date d) { return !operator<(d); }
+    int days() const
+    {
+        int month[12] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
+        return (2013 - y) * 365 + month[m] + d;
+    }
+    Date toDate(int x) const
+    {        
+        int month[12] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
+        int year = x / 365;
+        x -= year * 365;
+        int mon = 0;
+        for (int i = 0; i < 12; i++)
+        {
+            if (month[i] > x) { mon = i; }
+        }
+        x -= month[mon];
+        return Date(2013 + year, mon + 1, x);
+    }
 	int d, m, y;
 	string date;
 private:
@@ -63,9 +81,14 @@ public:
 	Time (int h, int m, int s) : h(h), m(m), s(s), time(string("")) {}
 	Time (int h, int m) : h(h), m(m), s(0), time(string("")) {}
 	Time (void) : h(0), m(0), s(0), time(string("")) {}
-    inline int seconds(void) const
+    int seconds(void) const
     {
         return 3600 * h + 60 * m + s;
+    }
+    inline Time toTime(int sec) const
+    {
+        int x = sec - (sec / (24 * 3600)) * 24 * 3600;
+        return Time(x / 3600, (x % 3600) / 60, x % 60);
     }
     inline bool operator <(Time t) const
     {
@@ -75,6 +98,18 @@ public:
     bool operator <=(Time t) { return operator <(t) || operator ==(t); }
     bool operator >(Time t) { return ! operator <=(t); }
     bool operator >=(Time t) { return ! operator <(t); }
+    Time operator +(Time t)
+    {
+        return toTime(t.seconds() + seconds());
+    }
+    Time operator -(Time t)
+    {
+        int t1 = seconds();
+        int t2 = t.seconds();
+        if (t1 < t2) { t1 += 24 * 3600; }
+        int res = t1 - t2;
+        return toTime(res);
+    }
 	int h, m, s;
 	string time;
 private:
@@ -377,6 +412,8 @@ int main(int argc, char **argv)
 {
 	if (argc > 2) { return 1; }
 	const char *path = argv[1];
+    int kind = 0;
+    kind = atoi(path);
     path = "Matches/";
     /*Match m(path);
     Line l = m.lines[1];
@@ -386,7 +423,12 @@ int main(int argc, char **argv)
     {
         cout << l.bonuses[i] << " " << endl;
     }*/
-    Analis anal(path);
-    anal.analis3(0);
+    //Analis anal(path);
+    //anal.analis2(kind);
+    Time t1(12, 10, 30);
+    Time t2(22, 57, 38);
+    Time t3 = t1 - t2;
+    cout << t3.h << ":" << t3.m << ":" << t3.s << endl;
+    //cout << t1.seconds() << endl;
     return 0;
 }
