@@ -466,15 +466,24 @@ public:
         cout << "Вывод вероятностей всех коэффицентов с шагом E" << accuracy << " для kind = " << kind << ":" << endl;
         for (map<double, double>::iterator i = P.begin(); i != P.end(); i++)
         {
-            P[(*i).first] /= All[(*i).first];
-            cout << (*i).first << "->" << (*i).second << endl;
+            double first = (*i).first;
+            //cout << first << "->" << (*i).second << " ";
+            P[first] /= All[first];
+            //cout << P[first] << " " << All[first] << endl;
         }
         cout << "***************************************************" << endl;
         for (map<double, double>::iterator i = P.begin(); i != P.end(); i++)
         {
-           E[(*i).first] = (*i).first * (*i).second;  //E[k] = p * k
-           Pos[(*i).first] = E[(*i).first] > 1;
-           cout << (*i).first << " " << E[(*i).first] << " " << Pos[(*i).first] << endl;
+            double k = (*i).first;
+            E[k] = k * (*i).second - 1;  //E[k] = p * k
+            Pos[k] = E[k] > 0;
+            const int indent = 10;
+            cout.width(indent); cout << k;
+            //cout << k << P[k] << All[k] << E[k] << Pos[k] << endl;
+            cout.width(indent); cout << P[k];
+            cout.width(indent); cout << All[k];
+            cout.width(indent); cout << E[k];
+            cout.width(indent); cout << Pos[k] << endl;
         }
         cout << "Количество матчей, по которым проводились расчеты: " << all << endl;
     }
