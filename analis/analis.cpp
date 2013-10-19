@@ -53,21 +53,34 @@ public:
 	bool operator >=(Date d) { return !operator<(d); }
     int days() const
     {
-        int month[12] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
-        return (2013 - y) * 365 + month[m] + d;
+        int month[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+        return (y - 2013) * 365 + month[m-1] + (d-1);
     }
     Date toDate(int x) const
     {        
-        int month[12] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
+        
+        int month[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
         int year = x / 365;
         x -= year * 365;
-        int mon = 0;
+        int mon = -1;
         for (int i = 0; i < 12; i++)
         {
-            if (month[i] > x) { mon = i; }
+            if (month[i] > x) { mon = i - 1; break; }
         }
+        if (mon == -1) { mon = 11; }
         x -= month[mon];
-        return Date(2013 + year, mon + 1, x);
+        return Date(x+1, mon + 1, 2013 + year);
+    }
+    int operator +(Date date) const
+    {
+        return date.days() + days();
+    }
+    int operator -(Date date) const
+    {
+        int d1 = days();
+        int d2 = date.days();
+        if (d1 < d2) { return -1; }
+        return d1 - d2;
     }
 	int d, m, y;
 	string date;
@@ -425,10 +438,13 @@ int main(int argc, char **argv)
     }*/
     //Analis anal(path);
     //anal.analis2(kind);
-    Time t1(12, 10, 30);
-    Time t2(22, 57, 38);
-    Time t3 = t1 - t2;
-    cout << t3.h << ":" << t3.m << ":" << t3.s << endl;
-    //cout << t1.seconds() << endl;
+    Date t1(13, 04, 2014);
+    Date t2(13, 03, 2014);
+    cout << t1.days() << endl;
+    cout << t2.days() << endl;
+    //Date t3 = t1.toDate(t1.days());
+    int delta = t1 - t2;
+    //cout << t3.d << ":" << t3.m << ":" << t3.y << endl;
+    cout << delta << endl;
     return 0;
 }
