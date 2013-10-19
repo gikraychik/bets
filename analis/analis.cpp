@@ -14,32 +14,29 @@ using namespace std;
 class Result
 {
 public:
-	Result(void) : res1(NULL), res2(NULL)
-	{
-		v[0][0] = 0; v[0][1] = 0; v[1][0] = 0; v[1][1] = 0;
-	}
-	Result(int x11, int x12, int x21, int x22) : res1(NULL), res2(NULL)
-	{
-		v[0][0] = x11; v[0][1] = x12; v[1][0] = x21; v[1][1] = x22;
-	}
-	Result(int arr[2][2]) : res1(NULL), res2(NULL)
-	{
-		v[0][0] = arr[0][0]; v[0][1] = arr[0][1]; v[1][0] = arr[1][0]; v[1][1] = arr[1][1];
-	}
-	int v[2][2];
-	const char *res1;
-	const char *res2;
+    Result(void)
+    {
+        v[0][0] = 0; v[0][1] = 0; v[1][0] = 0; v[1][1] = 0;
+    }
+    Result(int x11, int x12, int x21, int x22)
+    {
+        v[0][0] = x11; v[0][1] = x12; v[1][0] = x21; v[1][1] = x22;
+    }
+    Result(int arr[2][2])
+    {
+        v[0][0] = arr[0][0]; v[0][1] = arr[0][1]; v[1][0] = arr[1][0]; v[1][1] = arr[1][1];
+    }
+    int v[2][2];
 private:
-	void transform(void);
+    void transform(void);
 };
 
 class Date
 {
 public:
-	Date (const char *date) : d(0), m(0), y(0), date(string(date)) {}
-	Date (int d, int m, int y) : d(d), m(m), y(y), date(string("")) {}
-	Date() : d(0), m(0), y(0), date(string("")) {}
-	bool operator <(Date d)
+    Date (int d, int m, int y) : d(d), m(m), y(y) {}
+    Date() : d(0), m(0), y(0) {}
+    bool operator <(Date d)
     {
         if (y < d.y) { return true; } else if (y > d.y) { return false; }
         if (m < d.m) { return true; } else if (m > d.m) { return false; }
@@ -47,20 +44,20 @@ public:
         return false;
     }
     bool operator ==(Date d)
-	{
-		return ((y == d.y) && (m == d.m) && (this->d == d.d));
-	}
-	bool operator <=(Date d) { return operator <(d) || operator ==(d); }
-	bool operator >(Date d) { return !operator<=(d); }
-	bool operator >=(Date d) { return !operator<(d); }
+    {
+        return ((y == d.y) && (m == d.m) && (this->d == d.d));
+    }
+    bool operator <=(Date d) { return operator <(d) || operator ==(d); }
+    bool operator >(Date d) { return !operator<=(d); }
+    bool operator >=(Date d) { return !operator<(d); }
     int days() const
     {
         int month[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
         return (y - 2013) * 365 + month[m-1] + (d-1);
     }
     static Date toDate(int x)
-    {        
-        
+    {
+
         int month[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
         int year = x / 365;
         x -= year * 365;
@@ -84,18 +81,17 @@ public:
         if (d1 < d2) { return -1; }
         return d1 - d2;
     }
-	int d, m, y;
-	string date;
+    int d, m, y;
 private:
-	void transform(void);
+    void transform(void);
 };
 class Time
 {
 public:
-	Time (const char *time) : h(0), m(0), s(0), time(string(time)) {}
-	Time (int h, int m, int s) : h(h), m(m), s(s), time(string("")) {}
-	Time (int h, int m) : h(h), m(m), s(0), time(string("")) {}
-	Time (void) : h(0), m(0), s(0), time(string("")) {}
+    Time (const char *time) : h(0), m(0), s(0) {}
+    Time (int h, int m, int s) : h(h), m(m), s(s) {}
+    Time (int h, int m) : h(h), m(m), s(0) {}
+    Time (void) : h(0), m(0), s(0) {}
     int seconds(void) const
     {
         return 3600 * h + 60 * m + s;
@@ -125,35 +121,34 @@ public:
         int res = t1 - t2;
         return Time::toTime(res);
     }
-	int h, m, s;
-	string time;
+    int h, m, s;
 private:
-	void transform(void);
+    void transform(void);
 };
 class Commands
 {
 public:
-	Commands(const char *first, const char *second) : first(string(first)), second(string(second)){}
-	Commands(void) : first(string("")), second(string("")) {}
-	string first;
-	string second;
+    Commands(const char *first, const char *second) : first(string(first)), second(string(second)){}
+    Commands(void) : first(string("")), second(string("")) {}
+    string first;
+    string second;
 };
 class StaticInfo
 {
 public:
-	StaticInfo(Date &d, Time &t, Commands &c, Result &r) : resdate(d), restime(t), cmds(c), res(r) {}
-	StaticInfo(void) : resdate(Date()), restime(Time()), cmds(Commands()), res(Result()) {}
-	void init(Date &d, Time &t, Commands &c, Result &r)
-	{
-		resdate = d;
-		restime = t;
-		cmds = c;
-		res = r;
-	}
-	Date resdate;
-	Time restime;
-	Commands cmds;
-	Result res;
+    StaticInfo(Date &d, Time &t, Commands &c, Result &r) : resdate(d), restime(t), cmds(c), res(r) {}
+    StaticInfo(void) : resdate(Date()), restime(Time()), cmds(Commands()), res(Result()) {}
+    void init(Date &d, Time &t, Commands &c, Result &r)
+    {
+        resdate = d;
+        restime = t;
+        cmds = c;
+        res = r;
+    }
+    Date resdate;
+    Time restime;
+    Commands cmds;
+    Result res;
 };
 //typedef pair<Date, Time> Moment;
 class Moment
@@ -184,7 +179,7 @@ public:
         }
         else { days = date - moment.date; }
         double t = (double)(time - moment.time).seconds();
-        return 24*((double)days) + t / (3600);     
+        return 24*((double)days) + t / (3600);
     }
     double hours(void)
     {
@@ -205,125 +200,126 @@ public:
 class Line
 {
 public:
-	Line(void) : date(Date()), time(Time()), coeff(10, 0), bonuses(4, 0) {}
-	Line(Date &date, Time &time, vector<double> &coeff, vector<double> &bonuses)
-		: date(date), time(time), coeff(coeff), bonuses(bonuses) {}
-	Date date;
-	Time time;
-	vector<double> coeff;
-	vector<double> bonuses;
+    Line(void) : date(Date()), time(Time()), coeff(10, 0), bonuses(4, 0) {}
+    Line(Date &date, Time &time, vector<double> &coeff, vector<double> &bonuses)
+        : date(date), time(time), coeff(coeff), bonuses(bonuses) {}
+    Date date;
+    Time time;
+    vector<double> coeff;
+    vector<double> bonuses;
 };
 class Match
 {
 public:
-	Match(void) : stinf(StaticInfo()), lines(vector<Line>()) {}
-	Match(const char *path)
-	{
-		string ln;
-		ifstream file(path);
-		if (file.is_open())
-		{
-			int d, m, y;
-			readDate(file, d, m, y);
-			int hours, minutes, seconds;
-			readTime(file, hours, minutes);
-			getline(file, ln);
-			const char *com1 = strdup(ln.data());
-			getline(file, ln);
-			const char *com2 = strdup(ln.data());
-			int arr[2][2];
-			for (int i = 0; i < 2; i++)
+    Match(void) : stinf(StaticInfo()), lines(vector<Line>()) {}
+    Match(const char *path)
+    {
+        string ln;
+        ifstream file(path);
+        if (file.is_open())
+        {
+            int d, m, y;
+            readDate(file, d, m, y);
+            int hours, minutes, seconds;
+            readTime(file, hours, minutes);
+            getline(file, ln);
+            const char *com1 = strdup(ln.data());
+            getline(file, ln);
+            const char *com2 = strdup(ln.data());
+            int arr[2][2];
+            for (int i = 0; i < 2; i++)
             {
                 for (int j = 0; j < 2; j++)
                 {
-				    getline(file, ln);
-				    arr[i][j] = atoi(ln.data());
+                    getline(file, ln);
+                    arr[i][j] = atoi(ln.data());
                 }
-			}
-			Date date(d, m, y);
-			Time time(hours, minutes);
-			Commands cmds(com1, com2);
-			Result result(arr);
-			stinf.init(date, time, cmds, result);  //initialization of StaticInfo field
-			while (1)
-			{
-				int isOk = readDate(file, d, m, y);
-				if (!isOk) { break; }  //testing if end of file
-				readTime(file, hours, minutes, seconds);
-				vector<double> coeff(10, 0);
-				for (int i = 0; i < 10; i++)
-				{
-					getline(file, ln);
-					coeff[i] = atof(ln.data());
-				}
-				vector<double> bonuses(4, 0);
-				for (int i = 0; i < 4; i++)
-				{
-					getline(file, ln);
-					bonuses[i] = atof(ln.data());
-				}
-				Date date(d, m, y);
-				Time time(hours, minutes, seconds);
-				Line line(date, time, coeff, bonuses);
-				lines.push_back(line);
-			}
-			file.close();
-		}
-	}
-	bool bet_won(int kind) const
-	{
-		Result res = stinf.res;
-		vector <double> bonuses(lines[0].bonuses);  // предположили, что бонусы не изменяются на протяжении всей игры. Нужно проверить!
-		if (kind == 0) { return res.v[0][0] > res.v[0][1]; }
-		else if (kind == 1) { return res.v[0][0] == res.v[0][1]; }
-		else if (kind == 2) { return res.v[0][0] < res.v[0][1]; }
-		else if (kind == 3) { return res.v[0][0] >= res.v[0][1]; }
-		else if (kind == 4) { return res.v[0][0] != res.v[0][1]; }
-		else if (kind == 5) { return res.v[0][0] <= res.v[0][1]; }
-		else if (kind == 6) { return (res.v[0][0] + bonuses[0]) == res.v[0][1]; }
-		else if (kind == 7) { return res.v[0][0] == (res.v[0][1] - bonuses[1]); }
-		else if (kind == 8) { return (res.v[0][0] + res.v[0][1]) < bonuses[2]; }
-		else if (kind == 9) { return (res.v[0][0] + res.v[0][1]) > bonuses[3]; }
-		else return -1;
-	}
-	vector <double> get_coeff(int kind) const  //возвращает все коэффиценты на матч типа номер kind; 0<=kind<=9
-	{
-		vector <double> v;
-		for (int i = 0; i < lines.size(); i++)
-		{
-			v.push_back(lines[i].coeff[kind]);
-		}
-		return v;
-	}
-	double max(vector<double> &v) const
-	{
-		double max = -1000;
-		for (int i = 0; i < v.size(); i++)
-		{
-			if (v[i] > max) { max = v[i]; }
-		}
-		return max;
-	}
-	double min(vector<double> &v) const
-	{
-		double min = 1000;
-		for (int i = 0; i < v.size(); i++)
-		{
-			if (v[i] < min) { min = v[i]; }
-		}
-		return min;
-	}
-	double Mcoeff(int kind)
-	{
-		vector<double> v = get_coeff(kind);
-		double sum = 0.0;
-		for (int i = 0; i < v.size(); i++)
-		{
-			sum += v[i];
-		}
-		if (v.size() == 0) { return -1; }
-		return sum / v.size();
-	}
+            }
+            Date date(d, m, y);
+            Time time(hours, minutes);
+            Commands cmds(com1, com2);
+            Result result(arr);
+            stinf.init(date, time, cmds, result);  //initialization of StaticInfo field
+            while (1)
+            {
+                int isOk = readDate(file, d, m, y);
+                if (!isOk) { break; }  //testing if end of file
+                readTime(file, hours, minutes, seconds);
+                vector<double> coeff(10, 0);
+                for (int i = 0; i < 10; i++)
+                {
+                    getline(file, ln);
+                    coeff[i] = atof(ln.data());
+                }
+                vector<double> bonuses(4, 0);
+                for (int i = 0; i < 4; i++)
+                {
+                    getline(file, ln);
+                    bonuses[i] = atof(ln.data());
+                }
+                Date date(d, m, y);
+                Time time(hours, minutes, seconds);
+                Line line(date, time, coeff, bonuses);
+                lines.push_back(line);
+            }
+            file.close();
+        }
+    }
+    int bet_won(int kind) const
+    {
+        Result res = stinf.res;
+        vector <double> bonuses(lines[0].bonuses);  // предположили, что бонусы не изменяются на протяжении всей игры. Нужно проверить!
+        if ((res.v[0][0] < 0) || (res.v[0][1] < 1)) { return -1; }
+        if (kind == 0) { return res.v[0][0] > res.v[0][1]; }
+        else if (kind == 1) { return res.v[0][0] == res.v[0][1]; }
+        else if (kind == 2) { return res.v[0][0] < res.v[0][1]; }
+        else if (kind == 3) { return res.v[0][0] >= res.v[0][1]; }
+        else if (kind == 4) { return res.v[0][0] != res.v[0][1]; }
+        else if (kind == 5) { return res.v[0][0] <= res.v[0][1]; }
+        else if (kind == 6) { return (res.v[0][0] + bonuses[0]) == res.v[0][1]; }
+        else if (kind == 7) { return res.v[0][0] == (res.v[0][1] - bonuses[1]); }
+        else if (kind == 8) { return (res.v[0][0] + res.v[0][1]) < bonuses[2]; }
+        else if (kind == 9) { return (res.v[0][0] + res.v[0][1]) > bonuses[3]; }
+        else return -1;
+    }
+    vector <double> get_coeff(int kind) const  //возвращает все коэффиценты на матч типа номер kind; 0<=kind<=9
+    {
+        vector <double> v;
+        for (int i = 0; i < lines.size(); i++)
+        {
+            v.push_back(lines[i].coeff[kind]);
+        }
+        return v;
+    }
+    double max(vector<double> &v) const
+    {
+        double max = -1000;
+        for (int i = 0; i < v.size(); i++)
+        {
+            if (v[i] > max) { max = v[i]; }
+        }
+        return max;
+    }
+    double min(vector<double> &v) const
+    {
+        double min = 1000;
+        for (int i = 0; i < v.size(); i++)
+        {
+            if (v[i] < min) { min = v[i]; }
+        }
+        return min;
+    }
+    double Mcoeff(int kind)
+    {
+        vector<double> v = get_coeff(kind);
+        double sum = 0.0;
+        for (int i = 0; i < v.size(); i++)
+        {
+            sum += v[i];
+        }
+        if (v.size() == 0) { return -1; }
+        return sum / v.size();
+    }
     bool bonuses_eq(void) const  //это нужно для анализа 2
     {
         double b0 = lines[0].bonuses[0];
@@ -336,91 +332,130 @@ public:
         }
         return true;
     }
-	StaticInfo stinf;
-	vector<Line> lines;
+    bool check(void) const
+    {
+        bool isOk = true;
+        for (int i = 0; i < lines.size(); i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                if (lines[i].coeff[j] < 1)
+                {
+                    cout << "Error: lines[" << i << "].coeff[" << j << "] = " << lines[i].coeff[j] << endl;
+                    isOk = false;
+                }
+            }
+        }
+        Result res = stinf.res;
+        for (int i = 0; i < 2; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                if (res.v[i][j] < 0) { cout << "Error in res: v[" << i << "][" << j << "] = " << res.v[i][j] << endl; isOk = false; }
+            }
+        }
+        Date d = stinf.resdate;
+        if ((d.d < 0) || (d.d > 31)) { cout << "Error in resdate: day = " << d.d << endl; isOk = false; }
+        if ((d.m < 0) || (d.m > 12)) { cout << "Error in resdate: month = " << d.m<< endl; isOk = false; }
+        if (d.y < 2013) { cout << "Error in resdate: year = " << d.y << endl; isOk = false; }
+        Time t = stinf.restime;
+        if ((t.h < 0) || (t.h > 23)){ cout << "Error in restime: day = " << t.h << endl; isOk = false; }
+        if ((t.m < 0) || (t.m > 59)) { cout << "Error in restime: month = " << t.m<< endl; isOk = false; }
+        if ((t.s < 0) || (t.s > 59)) { cout << "Error in restime: year = " << t.s << endl; isOk = false; }
+        Commands c = stinf.cmds;
+        if (strlen(c.first.data()) < 4) { cout << "Error in cmds: cmds.first = '" << c.first << "'" << endl; isOk = false; }
+        if (strlen(c.second.data()) < 4) { cout << "Error in cmds: cmds.seconds = '" << c.second << "'" << endl; isOk = false; }
+        return isOk;
+    }
+    bool hasResult(void) const
+    {
+        return ((stinf.res.v[0][0] >= 0) && (stinf.res.v[0][1] >= 0));
+    }
+    StaticInfo stinf;
+    vector<Line> lines;
 private:
-	int readDate(ifstream &file, int &d, int &m, int &y) const
-	{
-		string ln;
-		if (!getline(file, ln)) { return 0; }  //end of file
-		d = atoi(ln.data());
-		getline(file, ln);
-		m = atoi(ln.data());
-		getline(file, ln);
-		y = atoi(ln.data());
-		return 1;  //correct
-	}
-	int readTime(ifstream &file, int &hours, int &minutes) const
-	{
-		string ln;
-		if (!getline(file, ln)) { return 0; }  //end of file
-		hours = atoi(ln.data());
-		getline(file, ln);
-		minutes = atoi(ln.data());
-		return 1;  //correct
-	}
+    int readDate(ifstream &file, int &d, int &m, int &y) const
+    {
+        string ln;
+        if (!getline(file, ln)) { return 0; }  //end of file
+        d = atoi(ln.data());
+        getline(file, ln);
+        m = atoi(ln.data());
+        getline(file, ln);
+        y = atoi(ln.data());
+        return 1;  //correct
+    }
+    int readTime(ifstream &file, int &hours, int &minutes) const
+    {
+        string ln;
+        if (!getline(file, ln)) { return 0; }  //end of file
+        hours = atoi(ln.data());
+        getline(file, ln);
+        minutes = atoi(ln.data());
+        return 1;  //correct
+    }
     int readTime(ifstream &file, int &hours, int &minutes, int &seconds)
     {
         string ln;
-		if (!getline(file, ln)) { return 0; }  //end of file
-		hours = atoi(ln.data());
-		getline(file, ln);
-		minutes = atoi(ln.data());
+        if (!getline(file, ln)) { return 0; }  //end of file
+        hours = atoi(ln.data());
+        getline(file, ln);
+        minutes = atoi(ln.data());
         getline(file, ln);
         seconds = atoi(ln.data());
-		return 1;  //correct
+        return 1;  //correct
     }
 };
 class Analis
 {
 public:
-	Analis(void) : games(vector<Match>()) {}
-	Analis(vector<Match > &games) : games(games) {}
-	Analis(const char *path)
-	{
-		DIR *dir;
-		dirent *ent;
-		dir = opendir(path);
-		while ((ent=readdir(dir)) != NULL)
-		{
-			if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
-			{
-				games.push_back(Match((string("Matches/")+string(ent->d_name)).data()));
-			}
-		}
-		closedir(dir);
-	}
-	void analis2(int kind) const  //анализирует коэффиценты типа kind 
-	{
-		cout << "Вывод всех коэффицентов типа kind = " << kind << ":" << endl;
+    Analis(void) : games(vector<Match>()) {}
+    Analis(vector<Match > &games) : games(games) {}
+    Analis(const char *path)
+    {
+        DIR *dir;
+        dirent *ent;
+        dir = opendir(path);
+        while ((ent=readdir(dir)) != NULL)
+        {
+            if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
+            {
+                games.push_back(Match((string("Matches/")+string(ent->d_name)).data()));
+            }
+        }
+        closedir(dir);
+    }
+    void analis2(int kind) const  //анализирует коэффиценты типа kind
+    {
+        cout << "Вывод всех коэффицентов типа kind = " << kind << ":" << endl;
         double delta = -1000.0;
-		for (int i = 0; i < games.size(); i++)
-		{
+        for (int i = 0; i < games.size(); i++)
+        {
             cout << "*********************************" << endl;
-			vector <double> coeff = games[i].get_coeff(kind);
+            vector <double> coeff = games[i].get_coeff(kind);
             cout << "Матч: " << games[i].stinf.resdate.d << "-" << games[i].stinf.resdate.m << "-" << games[i].stinf.resdate.y << " ";
             cout << games[i].stinf.restime.h << ":" << games[i].stinf.restime.m << endl;
             cout << games[i].stinf.cmds.first << "-" << games[i].stinf.cmds.second << endl;
-			print(coeff);
+            print(coeff);
             double min = games[i].min(coeff);
             double max = games[i].max(coeff);
-			cout << "Максимумумом является коэффицент: " << max << endl;
-			cout << "Минимумом является коэффицент: " << min << endl;
+            cout << "Максимумумом является коэффицент: " << max << endl;
+            cout << "Минимумом является коэффицент: " << min << endl;
             if ((max - min) > delta) { delta = max - min; }
             //cout << "*********************************" << endl;
             cout << "" << endl;
         }
         cout << "" << endl;
         cout << "Наибольшая дельта (max - min): " << delta << endl;
-		/*bool all_bonuses_eq = true;
-		for (int i = 0; i < games.size(); i++)
-		{
+        /*bool all_bonuses_eq = true;
+        for (int i = 0; i < games.size(); i++)
+        {
            // if (!games[i].bonuses_eq()) { all_bonuses_eq = false; }
            cout << games[i].bonuses_eq() << endl;
-		}
+        }
         cout << "Для каждого матча бонусы являются постоянными: " << all_bonuses_eq << endl;*/
         cout << "" << endl;
-	}
+    }
     void analis3(int kind) const  //анализирует бонусы
     {
         bool all_bonuses_eq = true;
@@ -447,6 +482,7 @@ public:
         int all = 0;
         for (int i = 0; i < games.size(); i++)
         {
+            if (!games[i].hasResult()) { continue; }
             Moment start(games[i].stinf.resdate, games[i].stinf.restime);
             double time_start = start.hours();
             double ts = time_start - t0;
@@ -458,7 +494,13 @@ public:
                 Moment curMoment(line.date, line.time);
                 double delta = (curMoment < moment) ? moment - curMoment : curMoment - moment;
                 if (delta > 0.5) { continue; }
+                if (line.coeff[kind] == 0) { continue; }
                 double k = Analis::rnd(line.coeff[kind], accuracy);
+                int dt = games[i].bet_won(kind);
+                if (dt == -1)  //это означает, что информация не доступна (не известна)
+                {
+                    continue;
+                }
                 P[k] += games[i].bet_won(kind); All[k] += 1;
                 all++;
             }
@@ -487,19 +529,30 @@ public:
         }
         cout << "Количество матчей, по которым проводились расчеты: " << all << endl;
     }
-	vector<Match> games;
-	map<double, int> Pk;
+    void analis5(void) const  //проверка на наличие бадяги в исходных данных
+    {
+        bool isOk = true;
+        for (int i = 0; i < games.size(); i++)
+        {
+            cout << "Анализ матча номер " << i << endl;
+            if (!games[i].check()) { isOk = false; }
+        }
+        if (isOk) { cout << "Проверка на бадягу успешно пройдена. Бадяги не выявлено" << endl; }
+        else { cout << "Бадяга была обнаружена. Конец провеки на бадягу" << endl; }
+    }
+    vector<Match> games;
+    map<double, int> Pk;
 private:
-	void print(vector<double> &v, int amount = 10) const
-	{
-		for (int i = 1; i < v.size()+1; i++)
-		{
+    void print(vector<double> &v, int amount = 10) const
+    {
+        for (int i = 1; i < v.size()+1; i++)
+        {
             if (i % amount == 0) { cout << endl; }
             cout.width(5);
-			cout << v[i-1];
-		}
-		cout << endl;
-	}
+            cout << v[i-1];
+        }
+        cout << endl;
+    }
 public:
     static double rnd(double x, int k)
     {
@@ -509,8 +562,8 @@ public:
 };
 int main(int argc, char **argv)
 {
-	if (argc > 2) { return 1; }
-	const char *path = argv[1];
+    if (argc > 2) { return 1; }
+    const char *path = argv[1];
     int kind = 0;
     //kind = atoi(path);
     path = "Matches/";
@@ -522,8 +575,11 @@ int main(int argc, char **argv)
     {
         cout << l.bonuses[i] << " " << endl;
     }*/
+    FILE *f = fopen("hello", "w");
+    fprintf(f, "lol");
     Analis anal(path);
-    anal.analis4(kind, 12.0, 1);
+    anal.analis4(kind, 23.0, 1);
+    //anal.analis5();
     Date d1(14, 05, 2014);
     Date d2(2, 01, 2014);
     Time t1(2, 43, 21);
