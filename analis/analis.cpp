@@ -7,6 +7,8 @@
 #include <string.h>
 #include <cstdlib>
 #include <map>
+#include <cmath>
+//#include <tgmath.h>
 
 using namespace std;
 class Result
@@ -56,7 +58,7 @@ public:
         int month[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
         return (y - 2013) * 365 + month[m-1] + (d-1);
     }
-    Date toDate(int x) const
+    static Date toDate(int x)
     {        
         
         int month[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
@@ -98,7 +100,7 @@ public:
     {
         return 3600 * h + 60 * m + s;
     }
-    inline Time toTime(int sec) const
+    inline static Time toTime(int sec)
     {
         int x = sec - (sec / (24 * 3600)) * 24 * 3600;
         return Time(x / 3600, (x % 3600) / 60, x % 60);
@@ -113,7 +115,7 @@ public:
     bool operator >=(Time t) { return ! operator <(t); }
     Time operator +(Time t)
     {
-        return toTime(t.seconds() + seconds());
+        return Time::toTime(t.seconds() + seconds());
     }
     Time operator -(Time t)
     {
@@ -121,7 +123,7 @@ public:
         int t2 = t.seconds();
         if (t1 < t2) { t1 += 24 * 3600; }
         int res = t1 - t2;
-        return toTime(res);
+        return Time::toTime(res);
     }
 	int h, m, s;
 	string time;
@@ -157,7 +159,7 @@ public:
 class Moment
 {
 public:
-    Moment(Date &d, Time &t) : date(d), time(t) {}
+    Moment(Date d, Time t) : date(d), time(t) {}
     bool operator <(Moment m)
     {
         if (date < m.date) { return true; }
@@ -172,7 +174,7 @@ public:
     bool operator <= (Moment m) { return operator <(m) || operator ==(m); }
     bool operator >(Moment m) { return ! operator <=(m); }
     bool operator >=(Moment m) { return ! operator <(m); }
-    double operator -(Moment moment)
+    double operator -(Moment moment)  //in hours
     {
         if ((*this) < moment) { return -1; }
         int days = 0;
@@ -182,7 +184,20 @@ public:
         }
         else { days = date - moment.date; }
         double t = (double)(time - moment.time).seconds();
-        return (double)days + t / (24 * 3600);     
+        return 24*((double)days) + t / (3600);     
+    }
+    double hours(void)
+    {
+        return operator-(Moment(Date(1, 1, 2013), Time(0, 0, 0)));
+    }
+    static Moment toMoment(double hours)
+    {
+        int days = ceil(hours / 24);
+        Date dt = Date::toDate(days);
+        hours -= days * 24;
+        int sec = round(hours * 3600);
+        Time tm = Time::toTime(sec);
+        return Moment(dt, tm);
     }
     Date date;
     Time time;
@@ -423,6 +438,45 @@ public:
             }
         }
     }
+    void analis4(int kind, double t0, int accuracy) const  //выявление положительного матожидания, построенного в момент времени t0
+    {
+        map<double, double> P;
+        map<double, double> E;
+        map<double, bool> Pos;
+        int all = 0;
+        for (int i = 0; i < games.size(); i++)
+        {
+            Moment start(games[i].stinf.resdate, games[i].stinf.restime);
+            double time_start = start.hours();
+            double ts = time_start - t0;
+            if (ts < 0) { break; }
+            Moment moment = Moment::toMoment(ts);
+            for (int j = 0; j < games[i].lines.size(); j++)
+            {
+                Line line = games[i].lines[j];
+                Moment curMoment(line.date, line.time);
+                double delta = (curMoment < moment) ? moment - curMoment : curMoment - moment;
+                if (delta > 0.5) { continue; }
+                double k = Analis::rnd(line.coeff[kind], accuracy);
+                P[k] += 1;
+                all++;
+            }
+        }
+        cout << "Вывод вероятностей всех коэффицентов с шагом E" << accuracy << " для kind = " << kind << ":" << endl;
+        for (map<double, double>::iterator i = P.begin(); i != P.end(); i++)
+        {
+            P[(*i).first] /= all;
+            cout << (*i).first << "->" << (*i).second << endl;
+        }
+        cout << "***************************************************" << endl;
+        for (map<double, double>::iterator i = P.begin(); i != P.end(); i++)
+        {
+           E[(*i).first] = (*i).first * (*i).second;  //E[k] = p * k
+           Pos[(*i).first] = E[(*i).first] > 0;
+           cout << (*i).first << " " << E[(*i).first] << " " << Pos[(*i).first] << endl;
+        }
+
+    }
 	vector<Match> games;
 	map<double, int> Pk;
 private:
@@ -436,13 +490,19 @@ private:
 		}
 		cout << endl;
 	}
+public:
+    static double rnd(double x, int k)
+    {
+        double p = pow(10, k);
+        return round(x * p) / p;
+    }
 };
 int main(int argc, char **argv)
 {
 	if (argc > 2) { return 1; }
 	const char *path = argv[1];
     int kind = 0;
-    kind = atoi(path);
+    //kind = atoi(path);
     path = "Matches/";
     /*Match m(path);
     Line l = m.lines[1];
@@ -452,8 +512,8 @@ int main(int argc, char **argv)
     {
         cout << l.bonuses[i] << " " << endl;
     }*/
-    //Analis anal(path);
-    //anal.analis2(kind);
+    Analis anal(path);
+    anal.analis4(kind, 12.0, 1);
     Date d1(14, 05, 2014);
     Date d2(2, 01, 2014);
     Time t1(18, 43, 21);
