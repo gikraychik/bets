@@ -192,7 +192,7 @@ public:
     }
     static Moment toMoment(double hours)
     {
-        int days = ceil(hours / 24);
+        int days = floor(hours / 24);
         Date dt = Date::toDate(days);
         hours -= days * 24;
         int sec = round(hours * 3600);
@@ -270,7 +270,7 @@ public:
 			file.close();
 		}
 	}
-	bool bet_won(int kind)
+	bool bet_won(int kind) const
 	{
 		Result res = stinf.res;
 		vector <double> bonuses(lines[0].bonuses);  // предположили, что бонусы не изменяются на протяжении всей игры. Нужно проверить!
@@ -375,7 +375,7 @@ class Analis
 {
 public:
 	Analis(void) : games(vector<Match>()) {}
-	Analis(vector<Match> &games) : games(games) {}
+	Analis(vector<Match > &games) : games(games) {}
 	Analis(const char *path)
 	{
 		DIR *dir;
@@ -443,6 +443,7 @@ public:
         map<double, double> P;
         map<double, double> E;
         map<double, bool> Pos;
+        map<double, int> All;
         int all = 0;
         for (int i = 0; i < games.size(); i++)
         {
@@ -458,24 +459,24 @@ public:
                 double delta = (curMoment < moment) ? moment - curMoment : curMoment - moment;
                 if (delta > 0.5) { continue; }
                 double k = Analis::rnd(line.coeff[kind], accuracy);
-                P[k] += 1;
+                P[k] += games[i].bet_won(kind); All[k] += 1;
                 all++;
             }
         }
         cout << "Вывод вероятностей всех коэффицентов с шагом E" << accuracy << " для kind = " << kind << ":" << endl;
         for (map<double, double>::iterator i = P.begin(); i != P.end(); i++)
         {
-            P[(*i).first] /= all;
+            P[(*i).first] /= All[(*i).first];
             cout << (*i).first << "->" << (*i).second << endl;
         }
         cout << "***************************************************" << endl;
         for (map<double, double>::iterator i = P.begin(); i != P.end(); i++)
         {
            E[(*i).first] = (*i).first * (*i).second;  //E[k] = p * k
-           Pos[(*i).first] = E[(*i).first] > 0;
+           Pos[(*i).first] = E[(*i).first] > 1;
            cout << (*i).first << " " << E[(*i).first] << " " << Pos[(*i).first] << endl;
         }
-
+        cout << "Количество матчей, по которым проводились расчеты: " << all << endl;
     }
 	vector<Match> games;
 	map<double, int> Pk;
@@ -516,15 +517,18 @@ int main(int argc, char **argv)
     anal.analis4(kind, 12.0, 1);
     Date d1(14, 05, 2014);
     Date d2(2, 01, 2014);
-    Time t1(18, 43, 21);
+    Time t1(2, 43, 21);
     Time t2(19, 8, 52);
     //cout << t1.days() << endl;
     //cout << t2.days() << endl;
     //Date t3 = t1.toDate(t1.days());
     Moment m1(d1, t1);
     Moment m2(d2, t2);
-    double delta = m1 - m2;
-    cout << delta << endl;
+    //cout << m1.hours() << endl;
+    //Moment m = Moment::toMoment((double)(m1.hours()));
+    //cout << m.date.d << ":" <<m.date.m<< ":" << m.date.y << " " << m.time.h << ":" << m.time.m << ":" << m.time.s << endl;
+    //double delta = m1 - m2;
+    //cout << delta << endl;
     //cout << t3.d << ":" << t3.m << ":" << t3.y << endl;
     return 0;
 }
