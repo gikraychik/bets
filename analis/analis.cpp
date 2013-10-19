@@ -160,14 +160,30 @@ public:
     Moment(Date &d, Time &t) : date(d), time(t) {}
     bool operator <(Moment m)
     {
-        if (date < m.date) { return true; } else { return false; }
-        if (time < m.time) { return true; } else { return false; }
-        return false;
+        if (date < m.date) { return true; }
+        else if (date > m.date) { return false; }
+        else
+        {
+            if (time < m.time) { return true; }
+            else { return false; }
+        }
     }
     bool operator ==(Moment m) { return (date == m.date) && (time == m.time); }
     bool operator <= (Moment m) { return operator <(m) || operator ==(m); }
     bool operator >(Moment m) { return ! operator <=(m); }
     bool operator >=(Moment m) { return ! operator <(m); }
+    double operator -(Moment moment)
+    {
+        if ((*this) < moment) { return -1; }
+        int days = 0;
+        if (time < moment.time)
+        {
+            days = date.toDate(date - moment.date) - Date(2, 1, 2013);
+        }
+        else { days = date - moment.date; }
+        double t = (double)(time - moment.time).seconds();
+        return (double)days + t / (24 * 3600);     
+    }
     Date date;
     Time time;
 };
@@ -438,13 +454,17 @@ int main(int argc, char **argv)
     }*/
     //Analis anal(path);
     //anal.analis2(kind);
-    Date t1(13, 04, 2014);
-    Date t2(13, 03, 2014);
-    cout << t1.days() << endl;
-    cout << t2.days() << endl;
+    Date d1(14, 05, 2014);
+    Date d2(2, 01, 2014);
+    Time t1(18, 43, 21);
+    Time t2(19, 8, 52);
+    //cout << t1.days() << endl;
+    //cout << t2.days() << endl;
     //Date t3 = t1.toDate(t1.days());
-    int delta = t1 - t2;
-    //cout << t3.d << ":" << t3.m << ":" << t3.y << endl;
+    Moment m1(d1, t1);
+    Moment m2(d2, t2);
+    double delta = m1 - m2;
     cout << delta << endl;
+    //cout << t3.d << ":" << t3.m << ":" << t3.y << endl;
     return 0;
 }
