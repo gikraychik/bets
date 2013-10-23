@@ -22,6 +22,10 @@ public:
     {
         cout << "Error: " << msg << endl;
     }
+    static void error(string msg)
+    {
+        cout << "Error: " << msg << endl;
+    }
 };
 
 class Result
@@ -29,7 +33,7 @@ class Result
 public:
     Result(void)
     {
-        v[0][0] = 0; v[0][1] = 0; v[1][0] = 0; v[1][1] = 0;
+        v[0][0] = -1; v[0][1] = -1; v[1][0] = -1; v[1][1] = -1;
     }
     Result(int x11, int x12, int x21, int x22)
     {
@@ -499,7 +503,7 @@ public:
         while (getline(commands_file, line))
         {
             string line2;
-            if (!getline(commands_file, line2)) { Error::error("Disproportion in commands file"); }
+            if (!getline(commands_file, line2)) { Error::error("Disproportion in commands file"); break; }
             cmds.push_back(Commands(line.data(), line2.data()));
         }
         commands_file.close();
@@ -525,6 +529,42 @@ public:
             coeff.push_back(value);
         }
         coeff_file.close();
+        int size = moments.size();
+        if ((cmds.size() != size) || (bonuses.size() != 4 * size) || (coeff.size() != 10 * size)) { Error::error(path + ": dispropotion in file sizes"); return -1; }
+        for (int i = 0; i < moments.size(); i++)
+        {
+            Match m(moments[i].date, moments[i].time, cmds[i]);
+            bool match_found = false;
+            /* инициализация coeff и bonuses для соответствующего i */
+            vector<double> c(10);
+            for (int k = i * 10; k < i * 10 + 10; k++)
+            {
+                c[k - i * 10] = coeff[k];
+            }
+            vector<double> b(4);
+            for (int k = i * 4; k < i * 4 + 4; k++)
+            {
+                b[k - i * 4] = bonuses[k];
+            }
+            /* конец инициализации  */
+            for (int j = 0; j < matches.size(); j++)
+            {
+                if (m == matches[j])
+                {
+                    Line l(moments[i].date, moments[i].time, c, b);
+                    matches[j].lines.push_back(l);
+                    match_found = true;
+                    break;
+                }
+            }
+            if (!match_found)
+            {
+                Line l(moments[i].date, moments[i].time, c, b);
+                m.lines.push_back(l);
+                matches.push_back(m);
+            }
+        }
+        cout << "Done." << endl;
     }
     Moment extract_moment(string line, Date cur_date) const
     {
