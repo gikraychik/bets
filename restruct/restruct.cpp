@@ -11,6 +11,8 @@
 #include <QTextStream>
 #include <map>
 #include <cmath>
+#include <malloc.h>
+#include <stdlib.h>
 #include <cwchar>
 //#include <tgmath.h>
 
@@ -474,7 +476,161 @@ public:
             {
                 string new_path = cur_path + "/" + times[j] + "/marathonbet.com/";  //находимся в директории с 4-мя файлами
                 int result = read_file(new_path, dates[i].data());
+                if (result != 0) { Error::error("unexpected error in reading 4 files"); }
+                /*new_path = cur_path + "/results/marathonbet.com";
+                result = read_result(new_path);
+                if (result != 0) { Error::error("unexpectrd error in reading results"); }*/
             }
+            string new_path = cur_path + "/results/marathonbet.com";
+            int result = read_result(new_path);
+            if (result != 0) { Error::error("unexpected error in reading results"); }
+        }
+        //cout << "Done." << endl;
+        out_matches("Matches");
+    }
+    void out_matches(const char *dir)
+    {
+        //DIR *directory = opendir(dir);
+        system((string("mkdir -p ") + dir).data());
+        for (int i = 0; i < matches.size(); i++)
+        {
+            Match m = matches[i];
+            string path = string(dir) + "/" + to_string(i);
+            fstream out;
+            out.open(path.data(), ios::out);
+            out << m.stinf.resdate.d << endl;
+            out << m.stinf.resdate.m << endl;
+            out << m.stinf.resdate.y << endl;
+            out << m.stinf.restime.h << endl;
+            out << m.stinf.restime.m << endl;
+            out << m.stinf.cmds.first << endl;
+            out << m.stinf.cmds.second << endl;
+            out << m.stinf.res.v[0][0] << endl;
+            out << m.stinf.res.v[0][1] << endl;
+            out << m.stinf.res.v[1][0] << endl;
+            out << m.stinf.res.v[0][1] << endl;
+            for (int j = 0; j < m.lines.size(); j++)
+            {
+                out << m.lines[j].date.d << endl;
+                out << m.lines[j].date.m << endl;
+                out << m.lines[j].date.y << endl;
+                for (int k = 0; k < 10; k++)
+                {
+                    out << m.lines[j].coeff[k] << endl;
+                }
+                for (int k = 0; k < 4; k++)
+                {
+                    out << m.lines[j].bonuses[k] << endl;
+                }
+            }
+        }
+    }
+    int read_result(string path)
+    {
+        DIR *dir;
+        dirent *ent;
+        dir = opendir(path.data());
+        if (dir == NULL) { Error::error("cannot find directory results"); return -1; }
+        string file_name;
+        while ((ent=readdir(dir)) != NULL)
+        {
+            if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
+            {
+                //dates.push_back(string(ent->d_name));
+                file_name = string(ent->d_name);
+                break;
+            }
+        }
+        closedir(dir);
+        string full_path = path + "/" + file_name;
+        ifstream input(full_path.data());
+        string line1;
+        while (getline(input, line1))
+        {
+            string line2, line3;
+            if (!getline(input, line2)) { Error::error("not enough lines if result file"); }
+            if (!getline(input, line3)) { Error::error("not enough lines if result file"); }
+            Moment moment = extract_moment(line1, Date(1, 1, 2013));  //здесь указывается любая дата
+            const char *s = line2.data();
+            int i = 1, k = 0;
+            char *p1 = (char *)malloc(strlen(s));
+            char *p2 = (char *)malloc(strlen(s));
+            while (1)
+            {
+                if (s[i] == ' ')
+                {
+                    if (s[i-1] == ' ')
+                    {
+                        break;
+                    }
+                    else { p1[k] = s[i-1]; k++; }
+                }
+                else
+                {
+                    p1[k] = s[i-1]; k++;
+                }
+                i++;
+            }
+            p1[k] = 0;  //terminated string
+            k = 0;
+            while ((s[i] == ' ') || (s[i] == '-')) { i++; }
+            i++;
+            int len = strlen(s);
+            while (1)
+            {
+                if (i >= len) { break; }
+                if (s[i] == ' ')
+                {
+                    if (s[i-1] == ' ')
+                    {
+                        break;
+                    }
+                    else { p2[k] = s[i-1]; k++; }
+                }
+                else { p2[k] = s[i-1]; k++; }
+                i++;
+            }
+            p2[k] = 0;
+            Commands cmds(p1, p2);
+            s = line3.data();
+            char r[3] = {0, 0, 0};
+            i = 0; k = 0;
+            while (s[i] == ' ') { i++; }
+            while (s[i] != ':')
+            {
+                r[k] = s[i];
+                i++; k++;
+            }
+            int v11 = atoi(r);
+            i++; k = 0;
+            r[0] = 0; r[1] = 0; r[2] = 0;
+            while (s[i] != ' ') { r[k] = s[i]; i++; k++; }
+            int v12 = atoi(r);
+            if ((v11 < 0) || (v11 > 20)) { Error::error("wrong extraction of primary results"); return -1; }
+            if ((v12 < 0) || (v12 > 20)) { Error::error("wrong extraction of primary results"); return -1; }
+            int c1 = s[5] - 48;
+            int c2 = s[7] - 48;
+            if ((c1 < 0) || (c1 > 9)) { Error::error("wrong extraction of secondary results"); return -1; }
+            if ((c2 < 0) || (c2 > 9)) { Error::error("wrong extraction of secondary results"); return -1; }
+            int arr[2][2];
+            arr[0][0] = v11; arr[0][1] = v12; arr[1][0] = c1; arr[1][1] = c2;
+            Result res(arr);
+            Match m(moment.date, moment.time, cmds);
+            bool match_found = false;
+            for (int i = 0; i < matches.size(); i++)
+            {
+                if (m == matches[i])
+                {
+                    matches[i].stinf.res = res;
+                    match_found = true;
+                }
+            }
+            if (!match_found)
+            {
+                m.stinf.res = res;
+                matches.push_back(m);
+            }
+            return 0;  //успех
         }
     }
     int read_file(string path, const char *cur_date)
@@ -564,7 +720,7 @@ public:
                 matches.push_back(m);
             }
         }
-        cout << "Done." << endl;
+        return 0;
     }
     Moment extract_moment(string line, Date cur_date) const
     {
@@ -616,6 +772,38 @@ public:
     char *source;
     char *dest;
 private:
+    string to_string(int x)
+    {
+        char *s = (char *)malloc(20);
+        itoa(x, s);
+        return string(s);
+    }
+    void reverse(char s[])
+    {
+        int i, j;
+        char c;
+
+        for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+            c = s[i];
+            s[i] = s[j];
+            s[j] = c;
+        }
+    }
+    void itoa(int n, char s[])
+    {
+        int i, sign;
+
+        if ((sign = n) < 0)  /* записываем знак */
+            n = -n;          /* делаем n положительным числом */
+        i = 0;
+        do {       /* генерируем цифры в обратном порядке */
+            s[i++] = n % 10 + '0';   /* берем следующую цифру */
+        } while ((n /= 10) > 0);     /* удаляем */
+        if (sign < 0)
+            s[i++] = '-';
+        s[i] = '\0';
+        reverse(s);
+    }
     int identify_month(char s[6]) const
     {
         if ((s[0]==-47) && (s[1]==-113) && (s[2]==-48) && (s[3]==-67) && (s[4]==-48) && (s[5]==-78)) { return 1; }
