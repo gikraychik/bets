@@ -6,11 +6,24 @@
 #include <dirent.h>
 #include <string.h>
 #include <cstdlib>
+#include <QString>
+#include <QFile>
+#include <QTextStream>
 #include <map>
 #include <cmath>
+#include <cwchar>
 //#include <tgmath.h>
 
 using namespace std;
+class Error
+{
+public:
+    static void error(const char *msg)
+    {
+        cout << "Error: " << msg << endl;
+    }
+};
+
 class Result
 {
 public:
@@ -80,6 +93,13 @@ public:
         int d2 = date.days();
         if (d1 < d2) { return -1; }
         return d1 - d2;
+    }
+    static Date toDate(const char *s)
+    {
+        int y = (s[0] - 48) * 1000 + (s[1] - 48) * 100 + (s[2] - 48) * 10 + (s[3] - 48);
+        int m = (s[5] - 48) * 10 + (s[6] - 48);
+        int d = (s[8] - 48) * 10 + (s[9] - 48);
+        return Date(d, m, y);
     }
     int d, m, y;
 };
@@ -152,6 +172,7 @@ public:
 class Moment
 {
 public:
+    Moment(void) : date(Date()), time(Time()) {}
     Moment(Date d, Time t) : date(d), time(t) {}
     bool operator <(Moment m)
     {
@@ -448,29 +469,62 @@ public:
             for (int j = 0; j < times.size(); j++)
             {
                 string new_path = cur_path + "/" + times[j] + "/marathonbet.com/";  //находимся в директории с 4-мя файлами
-                int result = read_file(cur_path);
+                int result = read_file(new_path, dates[i].data());
             }
         }
     }
-    int read_file(string path)
+    int read_file(string path, const char *cur_date)
     {
         vector<double> coeff, bonuses;
-        vector<Date> dates;
+        vector<Moment> moments;
         vector<Commands> cmds;
-        const char *dates_path = (path + "dates").data();
-        const char *commands_path = (path + "commands").data();
-        const char *bonuses_path = (path + "bonuses").data();
-        const char *coeff_path = (path + "coeff").data();
+        const char *dates_path = strdup((path + string("dates")).data());
+        const char *commands_path = strdup((path + "commands").data());
+        const char *bonuses_path = strdup((path + "bonuses").data());
+        const char *coeff_path = strdup((path + "coeff").data());
         ifstream dates_file(dates_path);
         ifstream commands_file(commands_path);
         ifstream bonuses_file(bonuses_path);
         ifstream coeff_file(coeff_path);
         string line;
         Moment moment;
-        while (!getline(dates_file, line))
+        Date c_date = Date::toDate(cur_date);
+        while (getline(dates_file, line))
         {
-            //moment = extract_moment(line, )
+            moment = extract_moment(line, c_date);
+            moments.push_back(moment);
+            //cout << moment.date.d << " " << moment.date.m << " " << moment.date.y << " " << moment.time.h << " " << moment.time.m << endl;
         }
+        dates_file.close();
+        while (getline(commands_file, line))
+        {
+            string line2;
+            if (!getline(commands_file, line2)) { Error::error("Disproportion in commands file"); }
+            cmds.push_back(Commands(line.data(), line2.data()));
+        }
+        commands_file.close();
+        while (getline(bonuses_file, line))
+        {
+            /* убраются начальные пробелы, но не конечные */
+            const char *s = line.data();
+            int i = 0;
+            while (s[i] == ' ') { i++; }
+            double value;
+            if (s[i] == ';') { value = 1000.0; }
+            else { value = atof(s+i); }
+            bonuses.push_back(value);
+        }
+        bonuses_file.close();
+        while (getline(coeff_file, line))
+        {
+            const char *s = line.data();
+            int i = 0;
+            while (s[i] == ' ') { i++; }
+            double value = atof(s+i);
+            if (value < 0) { Error::error("wrong info in coeff file. Value cannot be less than zero."); }
+            coeff.push_back(value);
+        }
+        coeff_file.close();
     }
     Moment extract_moment(string line, Date cur_date) const
     {
@@ -503,22 +557,12 @@ public:
             int day = (s[i] - 48) * 10 + (s[i+1] - 48);
             i += 2;
             while (s[i] == ' ') { i++; }
-            char m[4];  //первые три буквы месяца
-            m[0] = s[i]; m[1] = s[i+1]; m[2] = s[i+2]; m[3] = 0;
-            int month;
-            if (!strcmp(m, "янв")) { month = 1; }
-            else if (!strcmp(m, "фев")) { month = 2; }
-            else if (!strcmp(m, "март")) { month = 3; }
-            else if (!strcmp(m, "апр")) { month = 4; }
-            else if (!strcmp(m, "май")) { month = 5; }
-            else if (!strcmp(m, "июн")) { month = 6; }
-            else if (!strcmp(m, "июл")) { month = 7; }
-            else if (!strcmp(m, "авг")) { month = 8; }
-            else if (!strcmp(m, "сен")) { month = 9; }
-            else if (!strcmp(m, "окт")) { month = 10; }
-            else if (!strcmp(m, "ноя")) { month = 11; }
-            else if (!strcmp(m, "дек")) { month = 12; }
-            i += 3;
+            char m[7];  //первые три буквы месяца
+            //m[0] = s[i]; m[1] = s[i+1]; m[2] = s[i+2]; m[3] = 0;
+            m[0] = s[i]; m[1] = s[i+1]; m[2] = s[i+2]; m[3] = s[i+3];
+            m[4] = s[i+4]; m[5] = s[i+5]; m[6] = 0;
+            int month = identify_month(m);
+            i += 7;  //вел себя неадекватно
             while (s[i] == ' ') { i++; }
             int hour = (s[i] - 48) * 10 + (s[i+1] - 48);
             i += 3;
@@ -531,11 +575,28 @@ public:
     vector <Match> matches;
     char *source;
     char *dest;
+private:
+    int identify_month(char s[6]) const
+    {
+        if ((s[0]==-47) && (s[1]==-113) && (s[2]==-48) && (s[3]==-67) && (s[4]==-48) && (s[5]==-78)) { return 1; }
+        else if ((s[0]==-47) && (s[1]==-124) && (s[2]==-48) && (s[3]==-75) && (s[4]==-48) && (s[5]==-78)) { return 2; }
+        else if ((s[0]==-48) && (s[1]==-68) && (s[2]==-48) && (s[3]==-80) && (s[4]==-47) && (s[5]==-128)) { return 3; }
+        else if ((s[0]==-48) && (s[1]==-80) && (s[2]==-48) && (s[3]==-65) && (s[4]==-47) && (s[5]==-128)) { return 4; }
+        else if ((s[0]==-48) && (s[1]==-68) && (s[2]==-48) && (s[3]==-80) && (s[4]==-48) && (s[5]==-71)) { return 5; }
+        else if ((s[0]==-48) && (s[1]==-72) && (s[2]==-47) && (s[3]==-114) && (s[4]==-48) && (s[5]==-67)) { return 6; }
+        else if ((s[0]==-48) && (s[1]==-72) && (s[2]==-47) && (s[3]==-114) && (s[4]==-48) && (s[5]==-69)) { return 7; }
+        else if ((s[0]==-48) && (s[1]==-80) && (s[2]==-48) && (s[3]==-78) && (s[4]==-48) && (s[5]==-77)) { return 8; }
+        else if ((s[0]==-47) && (s[1]==-127) && (s[2]==-48) && (s[3]==-75) && (s[4]==-48) && (s[5]==-67)) { return 9; }
+        else if ((s[0]==-48) && (s[1]==-66) && (s[2]==-48) && (s[3]==-70) && (s[4]==-47) && (s[5]==-126)) { return 10; }
+        else if ((s[0]==-48) && (s[1]==-67) && (s[2]==-48) && (s[3]==-66) && (s[4]==-47) && (s[5]==-113)) { return 11; }
+        else if ((s[0]==-48) && (s[1]==-76) && (s[2]==-48) && (s[3]==-75) && (s[4]==-48) && (s[5]==-70)) { return 12; }
+        else return 0;
+    }
 };
 
 int main(int argc, char **argv)
 {
     Restruct r("data", "Matches");
-    //r.run();
+    r.run();
     return 0;
 }
