@@ -12,7 +12,6 @@
 #include <stdlib.h>
 
 using namespace std;
-static int global_counter = 0;
 class Error
 {
 public:
@@ -502,9 +501,6 @@ public:
                 string new_path = cur_path + "/" + times[j] + "/marathonbet.com/";  //находимся в директории с 4-мя файлами
                 int result = read_file(new_path, dates[i].data(), times[j].data());
                 if (result != 0) { Error::error("unexpected error in reading 4 files"); }
-                /*new_path = cur_path + "/results/marathonbet.com";
-                result = read_result(new_path);
-                if (result != 0) { Error::error("unexpectrd error in reading results"); }*/
             }
             string new_path = cur_path + "/results/marathonbet.com";
             if (i == 10)
@@ -512,9 +508,7 @@ public:
                 int k = 0;
             }
             int result = read_result(new_path);
-            //if (result != 0) { Error::error("unexpected error in reading results"); }
         }
-        //cout << "Done." << endl;
         out_matches("Matches");
     }
     void out_matches(const char *dir)
@@ -650,7 +644,6 @@ public:
             {
                 if (m == matches[i])
                 {
-                    global_counter++;
                     matches[i].stinf.res = res;
                     match_found = true;
                     break;
@@ -927,16 +920,9 @@ public:
         }
         cout << "" << endl;
         cout << "Наибольшая дельта (max - min): " << delta << endl;
-        /*bool all_bonuses_eq = true;
-        for (int i = 0; i < games.size(); i++)
-        {
-           // if (!games[i].bonuses_eq()) { all_bonuses_eq = false; }
-           cout << games[i].bonuses_eq() << endl;
-        }
-        cout << "Для каждого матча бонусы являются постоянными: " << all_bonuses_eq << endl;*/
         cout << "" << endl;
     }
-    void analis3(int kind) const  //анализирует бонусы
+    void analis3(void) const  //анализирует бонусы
     {
         bool all_bonuses_eq = true;
         for (int i = 0; i < games.size(); i++)
@@ -953,7 +939,7 @@ public:
             }
         }
     }
-    void analis4(int kind, double t0, int accuracy) const  //выявление положительного матожидания, построенного в момент времени t0
+    void analis4(int kind, double t0, int accuracy, double interval) const  //выявление положительного матожидания, построенного в момент времени t0
     {
         map<double, double> P;
         map<double, double> E;
@@ -973,7 +959,7 @@ public:
                 Line line = games[i].lines[j];
                 Moment curMoment(line.date, line.time);
                 double delta = (curMoment < moment) ? moment - curMoment : curMoment - moment;
-                if (delta > 0.5) { continue; }
+                if (delta > interval) { continue; }
                 if (line.coeff[kind] == 0) { continue; }
                 double k = Analis::rnd(line.coeff[kind], accuracy);
                 int dt = games[i].bet_won(kind);
@@ -1045,7 +1031,7 @@ int main(int argc, char **argv)
     Restruct r("data", "Matches");
     r.run();
     Analis anal("Matches");
-    anal.analis4(1, 12.0, 2);
-    cout << "Global: " << global_counter << endl;
+    //anal.analis4(1, 12.0, 2, 0.5);
+    anal.analis3();
     return 0;
 }
