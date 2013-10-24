@@ -8,15 +8,29 @@
 #include <cstdlib>
 #include <map>
 #include <cmath>
-//#include <tgmath.h>
+#include <malloc.h>
+#include <stdlib.h>
 
 using namespace std;
+class Error
+{
+public:
+    static void error(const char *msg)
+    {
+        cout << "Error: " << msg << endl;
+    }
+    static void error(string msg)
+    {
+        cout << "Error: " << msg << endl;
+    }
+};
+
 class Result
 {
 public:
     Result(void)
     {
-        v[0][0] = 0; v[0][1] = 0; v[1][0] = 0; v[1][1] = 0;
+        v[0][0] = -1; v[0][1] = -1; v[1][0] = -1; v[1][1] = -1;
     }
     Result(int x11, int x12, int x21, int x22)
     {
@@ -25,6 +39,21 @@ public:
     Result(int arr[2][2])
     {
         v[0][0] = arr[0][0]; v[0][1] = arr[0][1]; v[1][0] = arr[1][0]; v[1][1] = arr[1][1];
+    }
+    bool operator ==(Result &res) const
+    {
+        return ((v[0][0] == res.v[0][0]) && (v[0][1] == res.v[0][1]) && (v[1][0] == res.v[1][0]) && (v[1][1] == res.v[1][1]));
+    }
+    Result operator =(Result &res)
+    {
+        if ((v[0][0] != -1) || (v[0][1] != -1) || (v[1][0] != -1) || (v[1][1] != -1))
+        {
+            Error::error("result was changed although has already been set up");
+        }
+        v[0][0] = res.v[0][0];
+        v[0][1] = res.v[0][1];
+        v[1][0] = res.v[1][0];
+        v[1][1] = res.v[1][1];
     }
     int v[2][2];
 private:
@@ -81,9 +110,14 @@ public:
         if (d1 < d2) { return -1; }
         return d1 - d2;
     }
+    static Date toDate(const char *s)
+    {
+        int y = (s[0] - 48) * 1000 + (s[1] - 48) * 100 + (s[2] - 48) * 10 + (s[3] - 48);
+        int m = (s[5] - 48) * 10 + (s[6] - 48);
+        int d = (s[8] - 48) * 10 + (s[9] - 48);
+        return Date(d, m, y);
+    }
     int d, m, y;
-private:
-    void transform(void);
 };
 class Time
 {
@@ -121,6 +155,13 @@ public:
         int res = t1 - t2;
         return Time::toTime(res);
     }
+    static Time transToTime(const char *s)
+    {
+        int h = (s[0] - 48) * 10 + (s[1] - 48);
+        int m = (s[3] - 48) * 10  + (s[4] - 48);
+        int sec = (s[6] - 48) * 10 + (s[7] - 48);
+        return Time(h, m, sec);
+    }
     int h, m, s;
 private:
     void transform(void);
@@ -129,7 +170,11 @@ class Commands
 {
 public:
     Commands(const char *first, const char *second) : first(string(first)), second(string(second)){}
-    Commands(void) : first(string("")), second(string("")) {}
+    Commands(void) : first(string("No_name")), second(string("No_name")) {}
+    bool operator ==(Commands &cmds) const
+    {
+        return ((first == cmds.first) && (second == cmds.second));
+    }
     string first;
     string second;
 };
@@ -154,6 +199,7 @@ public:
 class Moment
 {
 public:
+    Moment(void) : date(Date()), time(Time()) {}
     Moment(Date d, Time t) : date(d), time(t) {}
     bool operator <(Moment m)
     {
@@ -212,6 +258,12 @@ class Match
 {
 public:
     Match(void) : stinf(StaticInfo()), lines(vector<Line>()) {}
+    Match(Date date, Time time, Commands cmds) : stinf(StaticInfo()), lines(vector<Line>())
+    {
+        stinf.resdate = date;
+        stinf.restime = time;
+        stinf.cmds = cmds;
+    }
     Match(const char *path)
     {
         string ln;
@@ -371,6 +423,13 @@ public:
     {
         return ((stinf.res.v[0][0] >= 0) && (stinf.res.v[0][1] >= 0));
     }
+    bool operator ==(Match &m)
+    {
+        bool b1 = (stinf.resdate.d == m.stinf.resdate.d) && (stinf.resdate.m == m.stinf.resdate.m) && (stinf.resdate.y == m.stinf.resdate.y);
+        bool b2 = (stinf.restime.h == m.stinf.restime.h) && (stinf.restime.m == m.stinf.restime.m);
+        bool b3 = (stinf.cmds == m.stinf.cmds);
+        return b1 && b2 && b3;
+    }
     StaticInfo stinf;
     vector<Line> lines;
 private:
@@ -404,6 +463,420 @@ private:
         getline(file, ln);
         seconds = atoi(ln.data());
         return 1;  //correct
+    }
+};
+class Restruct
+{
+public:
+    Restruct(const char *source, const char *dest) : source(strdup(source)), dest(strdup(dest)) {}
+    void run(void)
+    {
+        vector <string> dates;
+        DIR *dir;
+        dirent *ent;
+        dir = opendir(source);
+        while ((ent=readdir(dir)) != NULL)
+        {
+            if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
+            {
+                dates.push_back(string(ent->d_name));
+            }
+        }
+        closedir(dir);
+        for (int i = 0; i < dates.size(); i++)
+        {
+            vector <string> times;
+            string cur_path = string(source) + "/" + dates[i];  //содержится текущая директория. Внутри даты
+            dir = opendir(cur_path.data());
+            while ((ent=readdir(dir)) != NULL)
+            {
+                if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, "..") && (strcmp(ent->d_name, "results")))
+                {
+                    times.push_back(string(ent->d_name));
+                }
+            }
+            closedir(dir);
+            for (int j = 0; j < times.size(); j++)
+            {
+                string new_path = cur_path + "/" + times[j] + "/marathonbet.com/";  //находимся в директории с 4-мя файлами
+                int result = read_file(new_path, dates[i].data(), times[j].data());
+                if (result != 0) { Error::error("unexpected error in reading 4 files"); }
+            }
+            string new_path = cur_path + "/results/marathonbet.com";
+            if (i == 10)
+            {
+                int k = 0;
+            }
+            int result = read_result(new_path);
+        }
+        out_matches("Matches");
+    }
+    void out_matches(const char *dir)
+    {
+        //DIR *directory = opendir(dir);
+        system((string("mkdir -p ") + dir).data());
+        for (int i = 0; i < matches.size(); i++)
+        {
+            Match m = matches[i];
+            string path = string(dir) + "/" + to_string(i);
+            fstream out;
+            out.open(path.data(), ios::out);
+            out << m.stinf.resdate.d << endl;
+            out << m.stinf.resdate.m << endl;
+            out << m.stinf.resdate.y << endl;
+            out << m.stinf.restime.h << endl;
+            out << m.stinf.restime.m << endl;
+            out << m.stinf.cmds.first << endl;
+            out << m.stinf.cmds.second << endl;
+            out << m.stinf.res.v[0][0] << endl;
+            out << m.stinf.res.v[0][1] << endl;
+            out << m.stinf.res.v[1][0] << endl;
+            out << m.stinf.res.v[1][1] << endl;
+            for (int j = 0; j < m.lines.size(); j++)
+            {
+                out << m.lines[j].date.d << endl;
+                out << m.lines[j].date.m << endl;
+                out << m.lines[j].date.y << endl;
+                out << m.lines[j].time.h << endl;
+                out << m.lines[j].time.m << endl;
+                out << m.lines[j].time.s << endl;
+                for (int k = 0; k < 10; k++)
+                {
+                    out << m.lines[j].coeff[k] << endl;
+                }
+                for (int k = 0; k < 4; k++)
+                {
+                    out << m.lines[j].bonuses[k] << endl;
+                }
+            }
+        }
+    }
+    int read_result(string path)
+    {
+        DIR *dir;
+        dirent *ent;
+        dir = opendir(path.data());
+        if (dir == NULL) { Error::error("cannot find directory results"); return -1; }
+        string file_name;
+        while ((ent=readdir(dir)) != NULL)
+        {
+            if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
+            {
+                //dates.push_back(string(ent->d_name));
+                file_name = string(ent->d_name);
+                break;  //может находиться несколько файлов. Достаточно рассмотреть любой из них
+            }
+        }
+        closedir(dir);
+        string full_path = path + "/" + file_name;
+        ifstream input(full_path.data());
+        string line1;
+        int cnt = 0;
+        while (getline(input, line1))
+        {
+            cnt++;
+            if (cnt == 369)
+            {
+                cnt = 0;
+            }
+            string line2, line3;
+            if (!getline(input, line2)) { Error::error("not enough lines if result file"); }
+            if (!getline(input, line3)) { Error::error("not enough lines if result file"); }
+            if (line3 == "Матч отменен")
+            {
+                Error::error(full_path + ": game was cancelled"); continue;
+            }
+            Moment moment = extract_moment(line1, Date(1, 1, 2013));  //здесь указывается любая дата
+            const char *s = line2.data();
+            int i = 1, k = 0;
+            char *p1 = (char *)malloc(strlen(s));
+            char *p2 = (char *)malloc(strlen(s));
+            int len = strlen(s);
+            while (i < len)
+            {
+                if (s[i] == ' ')
+                {
+                    if (s[i-1] == ' ')
+                    {
+                        break;
+                    }
+                    else { p1[k] = s[i-1]; k++; }
+                }
+                else
+                {
+                    p1[k] = s[i-1]; k++;
+                }
+                i++;
+            }
+            p1[k] = 0;  //terminated string
+            k = 0;
+            while ((s[i] == ' ') || (s[i] == '-')) { i++; }
+            i++;
+            while (i < len)
+            {
+                if (i >= len) { break; }
+                if (s[i] == ' ')
+                {
+                    if (s[i-1] == ' ')
+                    {
+                        break;
+                    }
+                    else { p2[k] = s[i-1]; k++; }
+                }
+                else { p2[k] = s[i-1]; k++; }
+                i++;
+            }
+            p2[k] = 0;
+            Commands cmds(p1, p2);
+            s = line3.data();
+            int v11, v12, v21, v22;
+            extract_result(line3, v11, v12, v21, v22);
+            if ((v11 < 0) || (v11 > 20)) { Error::error(full_path + "wrong extraction of primary results(v11)"); cout << v11 << " " << v12 << " " << v21 << " " << v22 << endl; cout << line3 << endl; continue; }
+            if ((v12 < 0) || (v12 > 20)) { Error::error(full_path + "wrong extraction of primary results(v12)"); cout << v11 << " " << v12 << " " << v21 << " " << v22 << endl; cout << line3 << endl; continue; }
+            if ((v21 < 0) || (v21 > 9)) { Error::error(full_path + ": wrong extraction of secondary results(v21): "); cout << v11 << " " << v12 << " " << v21 << " " << v22 << endl; }
+            if ((v22 < 0) || (v22 > 9)) { Error::error(full_path + "wrong extraction of secondary results(v22): "); cout << v11 << " " << v12 << " " << v21 << " " << v22 << endl; }
+            int arr[2][2];
+            arr[0][0] = v11; arr[0][1] = v12; arr[1][0] = v21; arr[1][1] = v22;
+            Result res(arr);
+            Match m(moment.date, moment.time, cmds);
+            bool match_found = false;
+            for (int i = 0; i < matches.size(); i++)
+            {
+                if (m == matches[i])
+                {
+                    matches[i].stinf.res = res;
+                    match_found = true;
+                    break;
+                }
+            }
+            if (!match_found)
+            {
+                m.stinf.res = res;
+                matches.push_back(m);
+            }
+        }
+        return 0;
+    }
+    int read_file(string path, const char *cur_date, const char *cur_time)
+    {
+        vector<double> coeff, bonuses;
+        vector<Moment> moments;
+        vector<Commands> cmds;
+        const char *dates_path = strdup((path + string("dates")).data());
+        const char *commands_path = strdup((path + "commands").data());
+        const char *bonuses_path = strdup((path + "bonuses").data());
+        const char *coeff_path = strdup((path + "coeff").data());
+        ifstream dates_file(dates_path);
+        ifstream commands_file(commands_path);
+        ifstream bonuses_file(bonuses_path);
+        ifstream coeff_file(coeff_path);
+        string line;
+        Moment moment;
+        Date c_date = Date::toDate(cur_date);
+        while (getline(dates_file, line))
+        {
+            moment = extract_moment(line, c_date);
+            moments.push_back(moment);
+            //cout << moment.date.d << " " << moment.date.m << " " << moment.date.y << " " << moment.time.h << " " << moment.time.m << endl;
+        }
+        dates_file.close();
+        while (getline(commands_file, line))
+        {
+            string line2;
+            if (!getline(commands_file, line2)) { Error::error("Disproportion in commands file"); break; }
+            cmds.push_back(Commands(line.data(), line2.data()));
+        }
+        commands_file.close();
+        while (getline(bonuses_file, line))
+        {
+            /* убраются начальные пробелы, но не конечные */
+            const char *s = line.data();
+            int i = 0;
+            while (s[i] == ' ') { i++; }
+            double value;
+            if (s[i] == ';') { value = 1000.0; }
+            else { value = atof(s+i); }
+            bonuses.push_back(value);
+        }
+        bonuses_file.close();
+        while (getline(coeff_file, line))
+        {
+            const char *s = line.data();
+            int i = 0;
+            while (s[i] == ' ') { i++; }
+            double value = atof(s+i);
+            if (value < 0) { Error::error("wrong info in coeff file. Value cannot be less than zero."); }
+            coeff.push_back(value);
+        }
+        coeff_file.close();
+        int size = moments.size();
+        if ((cmds.size() != size) || (bonuses.size() != 4 * size) || (coeff.size() != 10 * size)) { Error::error(path + ": dispropotion in file sizes"); return -1; }
+        for (int i = 0; i < moments.size(); i++)
+        {
+            Match m(moments[i].date, moments[i].time, cmds[i]);
+            bool match_found = false;
+            /* инициализация coeff и bonuses для соответствующего i */
+            vector<double> c(10);
+            for (int k = i * 10; k < i * 10 + 10; k++)
+            {
+                c[k - i * 10] = coeff[k];
+            }
+            vector<double> b(4);
+            for (int k = i * 4; k < i * 4 + 4; k++)
+            {
+                b[k - i * 4] = bonuses[k];
+            }
+            Date n_date = Date::toDate(cur_date);
+            Time n_time = Time::transToTime(cur_time);
+            Line l(n_date, n_time, c, b);
+            //Line l(moments[i].date, moments[i].time, c, b);
+            /* конец инициализации  */
+            for (int j = 0; j < matches.size(); j++)
+            {
+                if (m == matches[j])
+                {
+                    matches[j].lines.push_back(l);
+                    match_found = true;
+                    break;
+                }
+            }
+            if (!match_found)
+            {
+                m.lines.push_back(l);
+                matches.push_back(m);
+            }
+        }
+        return 0;
+    }
+    Moment extract_moment(string line, Date cur_date) const
+    {
+        const char *s = line.data();
+        Date date;
+        Time time;
+        int number_of_words = 0;
+        int i = 0;
+        while (i < strlen(s))
+        {
+            while (s[i] == ' ') { i++; }
+            if (s[i] == 0) { break; }
+            while (s[i] != ' ') { i++; }
+            number_of_words++;
+        }
+        if (number_of_words == 1)  //неполная дата
+        {
+            i = 0;
+            while (s[i] == ' ') { i++; }
+            int hours = (s[i] - 48) * 10 + (s[i+1] - 48);
+            i += 3;  //пропустили двоеточие
+            int min = (s[i] - 48) * 10 + (s[i+1] - 48);
+            date = cur_date;
+            time = Time(hours, min, 0);
+        }
+        else  //полная дата
+        {
+            i = 0;
+            while (s[i] == ' ') { i++; }
+            int day = (s[i] - 48) * 10 + (s[i+1] - 48);
+            i += 2;
+            while (s[i] == ' ') { i++; }
+            char m[7];  //первые три буквы месяца
+            //m[0] = s[i]; m[1] = s[i+1]; m[2] = s[i+2]; m[3] = 0;
+            m[0] = s[i]; m[1] = s[i+1]; m[2] = s[i+2]; m[3] = s[i+3];
+            m[4] = s[i+4]; m[5] = s[i+5]; m[6] = 0;
+            int month = identify_month(m);
+            i += 7;  //вел себя неадекватно
+            while (s[i] == ' ') { i++; }
+            int hour = (s[i] - 48) * 10 + (s[i+1] - 48);
+            i += 3;
+            int min = (s[i] - 48) * 10 + (s[i+1] - 48);
+            date = Date(day, month, cur_date.y);  //очень опасный переход. В новый год будут проблемы
+            time = Time(hour, min, 0);
+        }
+        return Moment(date, time);
+    }
+    vector <Match> matches;
+    char *source;
+    char *dest;
+private:
+    void extract_result(string line, int &v11, int &v12, int &v21, int &v22) const
+    {
+        const char *s = line.data();
+        int i = 0;
+        int v[4] = {-1, -1, -1, -1};
+        v11 = -1; v12 = -1; v21 = -1; v22 = -1;
+        int k = 0;
+        while (s[i] != 0)
+        {
+            while (!is_digit(s[i])) { if (s[i] == 0) { break; } i++; }
+            if (s[i] == 0) { break; }
+            i = trans_to_int(s, i, v[k]);
+            k++;
+            if (s[i] == 0) { break; }
+        }
+        v11 = v[0]; v12 = v[1]; v21 = v[2]; v22 = v[3];
+        return;
+    }
+    bool is_digit(char c) const { return (c >= '0') && (c <= '9'); }
+    int trans_to_int(const char *s, int pos, int &value) const
+    {
+        int i = pos;
+        value = 0;
+        while (s[i] != 0)
+        {
+            if ((s[i] < '0') || (s[i] > '9')) { break; }
+            value *= 10;
+            value += (s[i] - 48);
+            i++;
+        }
+        return i;
+    }
+    string to_string(int x)
+    {
+        char *s = (char *)malloc(20);
+        itoa(x, s);
+        return string(s);
+    }
+    void reverse(char s[])
+    {
+        int i, j;
+        char c;
+
+        for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+            c = s[i];
+            s[i] = s[j];
+            s[j] = c;
+        }
+    }
+    void itoa(int n, char s[])
+    {
+        int i, sign;
+
+        if ((sign = n) < 0)  /* записываем знак */
+            n = -n;          /* делаем n положительным числом */
+        i = 0;
+        do {       /* генерируем цифры в обратном порядке */
+            s[i++] = n % 10 + '0';   /* берем следующую цифру */
+        } while ((n /= 10) > 0);     /* удаляем */
+        if (sign < 0)
+            s[i++] = '-';
+        s[i] = '\0';
+        reverse(s);
+    }
+    int identify_month(char s[6]) const
+    {
+        if ((s[0]==-47) && (s[1]==-113) && (s[2]==-48) && (s[3]==-67) && (s[4]==-48) && (s[5]==-78)) { return 1; }
+        else if ((s[0]==-47) && (s[1]==-124) && (s[2]==-48) && (s[3]==-75) && (s[4]==-48) && (s[5]==-78)) { return 2; }
+        else if ((s[0]==-48) && (s[1]==-68) && (s[2]==-48) && (s[3]==-80) && (s[4]==-47) && (s[5]==-128)) { return 3; }
+        else if ((s[0]==-48) && (s[1]==-80) && (s[2]==-48) && (s[3]==-65) && (s[4]==-47) && (s[5]==-128)) { return 4; }
+        else if ((s[0]==-48) && (s[1]==-68) && (s[2]==-48) && (s[3]==-80) && (s[4]==-48) && (s[5]==-71)) { return 5; }
+        else if ((s[0]==-48) && (s[1]==-72) && (s[2]==-47) && (s[3]==-114) && (s[4]==-48) && (s[5]==-67)) { return 6; }
+        else if ((s[0]==-48) && (s[1]==-72) && (s[2]==-47) && (s[3]==-114) && (s[4]==-48) && (s[5]==-69)) { return 7; }
+        else if ((s[0]==-48) && (s[1]==-80) && (s[2]==-48) && (s[3]==-78) && (s[4]==-48) && (s[5]==-77)) { return 8; }
+        else if ((s[0]==-47) && (s[1]==-127) && (s[2]==-48) && (s[3]==-75) && (s[4]==-48) && (s[5]==-67)) { return 9; }
+        else if ((s[0]==-48) && (s[1]==-66) && (s[2]==-48) && (s[3]==-70) && (s[4]==-47) && (s[5]==-126)) { return 10; }
+        else if ((s[0]==-48) && (s[1]==-67) && (s[2]==-48) && (s[3]==-66) && (s[4]==-47) && (s[5]==-113)) { return 11; }
+        else if ((s[0]==-48) && (s[1]==-76) && (s[2]==-48) && (s[3]==-75) && (s[4]==-48) && (s[5]==-70)) { return 12; }
+        else return 0;
     }
 };
 class Analis
@@ -447,16 +920,9 @@ public:
         }
         cout << "" << endl;
         cout << "Наибольшая дельта (max - min): " << delta << endl;
-        /*bool all_bonuses_eq = true;
-        for (int i = 0; i < games.size(); i++)
-        {
-           // if (!games[i].bonuses_eq()) { all_bonuses_eq = false; }
-           cout << games[i].bonuses_eq() << endl;
-        }
-        cout << "Для каждого матча бонусы являются постоянными: " << all_bonuses_eq << endl;*/
         cout << "" << endl;
     }
-    void analis3(int kind) const  //анализирует бонусы
+    void analis3(void) const  //анализирует бонусы
     {
         bool all_bonuses_eq = true;
         for (int i = 0; i < games.size(); i++)
@@ -473,7 +939,7 @@ public:
             }
         }
     }
-    void analis4(int kind, double t0, int accuracy) const  //выявление положительного матожидания, построенного в момент времени t0
+    void analis4(int kind, double t0, int accuracy, double interval) const  //выявление положительного матожидания, построенного в момент времени t0
     {
         map<double, double> P;
         map<double, double> E;
@@ -493,7 +959,7 @@ public:
                 Line line = games[i].lines[j];
                 Moment curMoment(line.date, line.time);
                 double delta = (curMoment < moment) ? moment - curMoment : curMoment - moment;
-                if (delta > 0.5) { continue; }
+                if (delta > interval) { continue; }
                 if (line.coeff[kind] == 0) { continue; }
                 double k = Analis::rnd(line.coeff[kind], accuracy);
                 int dt = games[i].bet_won(kind);
@@ -562,38 +1028,19 @@ public:
 };
 int main(int argc, char **argv)
 {
-    if (argc > 2) { return 1; }
-    const char *path = argv[1];
-    int kind = 0;
-    //kind = atoi(path);
-    path = "Matches/";
-    /*Match m(path);
-    Line l = m.lines[1];
-    cout << l.time.s << endl;
-    cout << "Size: " << l.bonuses.size() << endl;
-    for (int i = 0; i < l.bonuses.size(); i++)
+    if (argc != 5)
     {
-        cout << l.bonuses[i] << " " << endl;
-    }*/
-    FILE *f = fopen("hello", "w");
-    fprintf(f, "lol");
+        cout << "Введи 5 чисел! Прервано." << endl;
+        return 0;
+    }
+    int kind = atoi(argv[1]);
+    double hours = atof(argv[2]);
+    int accuracy = atoi(argv[3]);
+    double interval = atof(argv[4]);
+    //kind = atoi(path);
+    const char *path = "Matches/";
     Analis anal(path);
-    anal.analis4(kind, 23.0, 1);
-    //anal.analis5();
-    Date d1(14, 05, 2014);
-    Date d2(2, 01, 2014);
-    Time t1(2, 43, 21);
-    Time t2(19, 8, 52);
-    //cout << t1.days() << endl;
-    //cout << t2.days() << endl;
-    //Date t3 = t1.toDate(t1.days());
-    Moment m1(d1, t1);
-    Moment m2(d2, t2);
-    //cout << m1.hours() << endl;
-    //Moment m = Moment::toMoment((double)(m1.hours()));
-    //cout << m.date.d << ":" <<m.date.m<< ":" << m.date.y << " " << m.time.h << ":" << m.time.m << ":" << m.time.s << endl;
-    //double delta = m1 - m2;
-    //cout << delta << endl;
-    //cout << t3.d << ":" << t3.m << ":" << t3.y << endl;
+    anal.analis4(kind, hours, accuracy, interval);
+    cout << "Выполнено." << endl;
     return 0;
 }
