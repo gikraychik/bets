@@ -426,11 +426,10 @@ public:
     }
     bool operator ==(Match &m)
     {
-        //return ((stinf.resdate.d == m.stinf.resdate.d) && (stinf.resdate.m == m.stinf.resdate.m) && (stinf.resdate.y == m.stinf.resdate.y) && (stinf.cmds == m.stinf.cmds));
         bool b1 = (stinf.resdate.d == m.stinf.resdate.d) && (stinf.resdate.m == m.stinf.resdate.m) && (stinf.resdate.y == m.stinf.resdate.y);
         bool b2 = (stinf.restime.h == m.stinf.restime.h) && (stinf.restime.m == m.stinf.restime.m);
         bool b3 = (stinf.cmds == m.stinf.cmds);
-        return b2 && b3;
+        return b1 && b2 && b3;
     }
     StaticInfo stinf;
     vector<Line> lines;
@@ -638,10 +637,10 @@ public:
             s = line3.data();
             int v11, v12, v21, v22;
             extract_result(line3, v11, v12, v21, v22);
-            if ((v11 < 0) || (v11 > 20)) { Error::error(full_path + "wrong extraction of primary results(v11)"); cout << v11 << endl; continue; }
-            if ((v12 < 0) || (v12 > 20)) { Error::error(full_path + "wrong extraction of primary results(v12)"); }
-            if ((v21 < 0) || (v21 > 9)) { Error::error(full_path + ": wrong extraction of secondary results(v21): "); cout << line3 << endl; continue; }
-            if ((v22 < 0) || (v22 > 9)) { Error::error(full_path + "wrong extraction of secondary results(v22): "); continue; }
+            if ((v11 < 0) || (v11 > 20)) { Error::error(full_path + "wrong extraction of primary results(v11)"); cout << v11 << " " << v12 << " " << v21 << " " << v22 << endl; cout << line3 << endl; continue; }
+            if ((v12 < 0) || (v12 > 20)) { Error::error(full_path + "wrong extraction of primary results(v12)"); cout << v11 << " " << v12 << " " << v21 << " " << v22 << endl; cout << line3 << endl; continue; }
+            if ((v21 < 0) || (v21 > 9)) { Error::error(full_path + ": wrong extraction of secondary results(v21): "); cout << v11 << " " << v12 << " " << v21 << " " << v22 << endl; }
+            if ((v22 < 0) || (v22 > 9)) { Error::error(full_path + "wrong extraction of secondary results(v22): "); cout << v11 << " " << v12 << " " << v21 << " " << v22 << endl; }
             int arr[2][2];
             arr[0][0] = v11; arr[0][1] = v12; arr[1][0] = v21; arr[1][1] = v22;
             Result res(arr);
