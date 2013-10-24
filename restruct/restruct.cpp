@@ -6,17 +6,13 @@
 #include <dirent.h>
 #include <string.h>
 #include <cstdlib>
-#include <QString>
-#include <QFile>
-#include <QTextStream>
 #include <map>
 #include <cmath>
 #include <malloc.h>
 #include <stdlib.h>
-#include <cwchar>
-//#include <tgmath.h>
 
 using namespace std;
+static int global_counter = 0;
 class Error
 {
 public:
@@ -44,6 +40,21 @@ public:
     Result(int arr[2][2])
     {
         v[0][0] = arr[0][0]; v[0][1] = arr[0][1]; v[1][0] = arr[1][0]; v[1][1] = arr[1][1];
+    }
+    bool operator ==(Result &res) const
+    {
+        return ((v[0][0] == res.v[0][0]) && (v[0][1] == res.v[0][1]) && (v[1][0] == res.v[1][0]) && (v[1][1] == res.v[1][1]));
+    }
+    Result operator =(Result &res)
+    {
+        if ((v[0][0] != -1) || (v[0][1] != -1) || (v[1][0] != -1) || (v[1][1] != -1))
+        {
+            Error::error("result was changed although has already been set up");
+        }
+        v[0][0] = res.v[0][0];
+        v[0][1] = res.v[0][1];
+        v[1][0] = res.v[1][0];
+        v[1][1] = res.v[1][1];
     }
     int v[2][2];
 private:
@@ -145,6 +156,13 @@ public:
         int res = t1 - t2;
         return Time::toTime(res);
     }
+    static Time transToTime(const char *s)
+    {
+        int h = (s[0] - 48) * 10 + (s[1] - 48);
+        int m = (s[3] - 48) * 10  + (s[4] - 48);
+        int sec = (s[6] - 48) * 10 + (s[7] - 48);
+        return Time(h, m, sec);
+    }
     int h, m, s;
 private:
     void transform(void);
@@ -153,7 +171,11 @@ class Commands
 {
 public:
     Commands(const char *first, const char *second) : first(string(first)), second(string(second)){}
-    Commands(void) : first(string("")), second(string("")) {}
+    Commands(void) : first(string("No_name")), second(string("No_name")) {}
+    bool operator ==(Commands &cmds) const
+    {
+        return ((first == cmds.first) && (second == cmds.second));
+    }
     string first;
     string second;
 };
@@ -404,7 +426,11 @@ public:
     }
     bool operator ==(Match &m)
     {
-        return ((stinf.resdate == m.stinf.resdate) && (stinf.restime == m.stinf.restime) && (stinf.cmds.first == m.stinf.cmds.first) && (stinf.cmds.second == m.stinf.cmds.second));
+        //return ((stinf.resdate.d == m.stinf.resdate.d) && (stinf.resdate.m == m.stinf.resdate.m) && (stinf.resdate.y == m.stinf.resdate.y) && (stinf.cmds == m.stinf.cmds));
+        bool b1 = (stinf.resdate.d == m.stinf.resdate.d) && (stinf.resdate.m == m.stinf.resdate.m) && (stinf.resdate.y == m.stinf.resdate.y);
+        bool b2 = (stinf.restime.h == m.stinf.restime.h) && (stinf.restime.m == m.stinf.restime.m);
+        bool b3 = (stinf.cmds == m.stinf.cmds);
+        return b2 && b3;
     }
     StaticInfo stinf;
     vector<Line> lines;
@@ -475,15 +501,19 @@ public:
             for (int j = 0; j < times.size(); j++)
             {
                 string new_path = cur_path + "/" + times[j] + "/marathonbet.com/";  //находимся в директории с 4-мя файлами
-                int result = read_file(new_path, dates[i].data());
+                int result = read_file(new_path, dates[i].data(), times[j].data());
                 if (result != 0) { Error::error("unexpected error in reading 4 files"); }
                 /*new_path = cur_path + "/results/marathonbet.com";
                 result = read_result(new_path);
                 if (result != 0) { Error::error("unexpectrd error in reading results"); }*/
             }
             string new_path = cur_path + "/results/marathonbet.com";
+            if (i == 10)
+            {
+                int k = 0;
+            }
             int result = read_result(new_path);
-            if (result != 0) { Error::error("unexpected error in reading results"); }
+            //if (result != 0) { Error::error("unexpected error in reading results"); }
         }
         //cout << "Done." << endl;
         out_matches("Matches");
@@ -508,12 +538,15 @@ public:
             out << m.stinf.res.v[0][0] << endl;
             out << m.stinf.res.v[0][1] << endl;
             out << m.stinf.res.v[1][0] << endl;
-            out << m.stinf.res.v[0][1] << endl;
+            out << m.stinf.res.v[1][1] << endl;
             for (int j = 0; j < m.lines.size(); j++)
             {
                 out << m.lines[j].date.d << endl;
                 out << m.lines[j].date.m << endl;
                 out << m.lines[j].date.y << endl;
+                out << m.lines[j].time.h << endl;
+                out << m.lines[j].time.m << endl;
+                out << m.lines[j].time.s << endl;
                 for (int k = 0; k < 10; k++)
                 {
                     out << m.lines[j].coeff[k] << endl;
@@ -538,24 +571,35 @@ public:
             {
                 //dates.push_back(string(ent->d_name));
                 file_name = string(ent->d_name);
-                break;
+                break;  //может находиться несколько файлов. Достаточно рассмотреть любой из них
             }
         }
         closedir(dir);
         string full_path = path + "/" + file_name;
         ifstream input(full_path.data());
         string line1;
+        int cnt = 0;
         while (getline(input, line1))
         {
+            cnt++;
+            if (cnt == 369)
+            {
+                cnt = 0;
+            }
             string line2, line3;
             if (!getline(input, line2)) { Error::error("not enough lines if result file"); }
             if (!getline(input, line3)) { Error::error("not enough lines if result file"); }
+            if (line3 == "Матч отменен")
+            {
+                Error::error(full_path + ": game was cancelled"); continue;
+            }
             Moment moment = extract_moment(line1, Date(1, 1, 2013));  //здесь указывается любая дата
             const char *s = line2.data();
             int i = 1, k = 0;
             char *p1 = (char *)malloc(strlen(s));
             char *p2 = (char *)malloc(strlen(s));
-            while (1)
+            int len = strlen(s);
+            while (i < len)
             {
                 if (s[i] == ' ')
                 {
@@ -575,8 +619,7 @@ public:
             k = 0;
             while ((s[i] == ' ') || (s[i] == '-')) { i++; }
             i++;
-            int len = strlen(s);
-            while (1)
+            while (i < len)
             {
                 if (i >= len) { break; }
                 if (s[i] == ' ')
@@ -593,27 +636,14 @@ public:
             p2[k] = 0;
             Commands cmds(p1, p2);
             s = line3.data();
-            char r[3] = {0, 0, 0};
-            i = 0; k = 0;
-            while (s[i] == ' ') { i++; }
-            while (s[i] != ':')
-            {
-                r[k] = s[i];
-                i++; k++;
-            }
-            int v11 = atoi(r);
-            i++; k = 0;
-            r[0] = 0; r[1] = 0; r[2] = 0;
-            while (s[i] != ' ') { r[k] = s[i]; i++; k++; }
-            int v12 = atoi(r);
-            if ((v11 < 0) || (v11 > 20)) { Error::error("wrong extraction of primary results"); return -1; }
-            if ((v12 < 0) || (v12 > 20)) { Error::error("wrong extraction of primary results"); return -1; }
-            int c1 = s[5] - 48;
-            int c2 = s[7] - 48;
-            if ((c1 < 0) || (c1 > 9)) { Error::error("wrong extraction of secondary results"); return -1; }
-            if ((c2 < 0) || (c2 > 9)) { Error::error("wrong extraction of secondary results"); return -1; }
+            int v11, v12, v21, v22;
+            extract_result(line3, v11, v12, v21, v22);
+            if ((v11 < 0) || (v11 > 20)) { Error::error(full_path + "wrong extraction of primary results(v11)"); cout << v11 << endl; continue; }
+            if ((v12 < 0) || (v12 > 20)) { Error::error(full_path + "wrong extraction of primary results(v12)"); }
+            if ((v21 < 0) || (v21 > 9)) { Error::error(full_path + ": wrong extraction of secondary results(v21): "); cout << line3 << endl; continue; }
+            if ((v22 < 0) || (v22 > 9)) { Error::error(full_path + "wrong extraction of secondary results(v22): "); continue; }
             int arr[2][2];
-            arr[0][0] = v11; arr[0][1] = v12; arr[1][0] = c1; arr[1][1] = c2;
+            arr[0][0] = v11; arr[0][1] = v12; arr[1][0] = v21; arr[1][1] = v22;
             Result res(arr);
             Match m(moment.date, moment.time, cmds);
             bool match_found = false;
@@ -621,8 +651,10 @@ public:
             {
                 if (m == matches[i])
                 {
+                    global_counter++;
                     matches[i].stinf.res = res;
                     match_found = true;
+                    break;
                 }
             }
             if (!match_found)
@@ -630,10 +662,10 @@ public:
                 m.stinf.res = res;
                 matches.push_back(m);
             }
-            return 0;  //успех
         }
+        return 0;
     }
-    int read_file(string path, const char *cur_date)
+    int read_file(string path, const char *cur_date, const char *cur_time)
     {
         vector<double> coeff, bonuses;
         vector<Moment> moments;
@@ -702,12 +734,15 @@ public:
             {
                 b[k - i * 4] = bonuses[k];
             }
+            Date n_date = Date::toDate(cur_date);
+            Time n_time = Time::transToTime(cur_time);
+            Line l(n_date, n_time, c, b);
+            //Line l(moments[i].date, moments[i].time, c, b);
             /* конец инициализации  */
             for (int j = 0; j < matches.size(); j++)
             {
                 if (m == matches[j])
                 {
-                    Line l(moments[i].date, moments[i].time, c, b);
                     matches[j].lines.push_back(l);
                     match_found = true;
                     break;
@@ -715,7 +750,6 @@ public:
             }
             if (!match_found)
             {
-                Line l(moments[i].date, moments[i].time, c, b);
                 m.lines.push_back(l);
                 matches.push_back(m);
             }
@@ -772,6 +806,38 @@ public:
     char *source;
     char *dest;
 private:
+    void extract_result(string line, int &v11, int &v12, int &v21, int &v22) const
+    {
+        const char *s = line.data();
+        int i = 0;
+        int v[4] = {-1, -1, -1, -1};
+        v11 = -1; v12 = -1; v21 = -1; v22 = -1;
+        int k = 0;
+        while (s[i] != 0)
+        {
+            while (!is_digit(s[i])) { if (s[i] == 0) { break; } i++; }
+            if (s[i] == 0) { break; }
+            i = trans_to_int(s, i, v[k]);
+            k++;
+            if (s[i] == 0) { break; }
+        }
+        v11 = v[0]; v12 = v[1]; v21 = v[2]; v22 = v[3];
+        return;
+    }
+    bool is_digit(char c) const { return (c >= '0') && (c <= '9'); }
+    int trans_to_int(const char *s, int pos, int &value) const
+    {
+        int i = pos;
+        value = 0;
+        while (s[i] != 0)
+        {
+            if ((s[i] < '0') || (s[i] > '9')) { break; }
+            value *= 10;
+            value += (s[i] - 48);
+            i++;
+        }
+        return i;
+    }
     string to_string(int x)
     {
         char *s = (char *)malloc(20);
@@ -821,10 +887,166 @@ private:
         else return 0;
     }
 };
-
+class Analis
+{
+public:
+    Analis(void) : games(vector<Match>()) {}
+    Analis(vector<Match > &games) : games(games) {}
+    Analis(const char *path)
+    {
+        DIR *dir;
+        dirent *ent;
+        dir = opendir(path);
+        while ((ent=readdir(dir)) != NULL)
+        {
+            if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
+            {
+                games.push_back(Match((string("Matches/")+string(ent->d_name)).data()));
+            }
+        }
+        closedir(dir);
+    }
+    void analis2(int kind) const  //анализирует коэффиценты типа kind
+    {
+        cout << "Вывод всех коэффицентов типа kind = " << kind << ":" << endl;
+        double delta = -1000.0;
+        for (int i = 0; i < games.size(); i++)
+        {
+            cout << "*********************************" << endl;
+            vector <double> coeff = games[i].get_coeff(kind);
+            cout << "Матч: " << games[i].stinf.resdate.d << "-" << games[i].stinf.resdate.m << "-" << games[i].stinf.resdate.y << " ";
+            cout << games[i].stinf.restime.h << ":" << games[i].stinf.restime.m << endl;
+            cout << games[i].stinf.cmds.first << "-" << games[i].stinf.cmds.second << endl;
+            print(coeff);
+            double min = games[i].min(coeff);
+            double max = games[i].max(coeff);
+            cout << "Максимумумом является коэффицент: " << max << endl;
+            cout << "Минимумом является коэффицент: " << min << endl;
+            if ((max - min) > delta) { delta = max - min; }
+            //cout << "*********************************" << endl;
+            cout << "" << endl;
+        }
+        cout << "" << endl;
+        cout << "Наибольшая дельта (max - min): " << delta << endl;
+        /*bool all_bonuses_eq = true;
+        for (int i = 0; i < games.size(); i++)
+        {
+           // if (!games[i].bonuses_eq()) { all_bonuses_eq = false; }
+           cout << games[i].bonuses_eq() << endl;
+        }
+        cout << "Для каждого матча бонусы являются постоянными: " << all_bonuses_eq << endl;*/
+        cout << "" << endl;
+    }
+    void analis3(int kind) const  //анализирует бонусы
+    {
+        bool all_bonuses_eq = true;
+        for (int i = 0; i < games.size(); i++)
+        {
+            if (!games[i].bonuses_eq())
+            {
+                all_bonuses_eq = false;
+                for (int j = 0; j < games[i].lines.size(); j++)
+                {
+                    for (int k = 0; k < 4; k++) { cout.width(6); cout << games[i].lines[j].bonuses[k]; }
+                    cout << endl;
+                }
+                cout << "*******************************" << endl;
+            }
+        }
+    }
+    void analis4(int kind, double t0, int accuracy) const  //выявление положительного матожидания, построенного в момент времени t0
+    {
+        map<double, double> P;
+        map<double, double> E;
+        map<double, bool> Pos;
+        map<double, int> All;
+        int all = 0;
+        for (int i = 0; i < games.size(); i++)
+        {
+            if (!games[i].hasResult()) { continue; }
+            Moment start(games[i].stinf.resdate, games[i].stinf.restime);
+            double time_start = start.hours();
+            double ts = time_start - t0;
+            if (ts < 0) { break; }
+            Moment moment = Moment::toMoment(ts);
+            for (int j = 0; j < games[i].lines.size(); j++)
+            {
+                Line line = games[i].lines[j];
+                Moment curMoment(line.date, line.time);
+                double delta = (curMoment < moment) ? moment - curMoment : curMoment - moment;
+                if (delta > 0.5) { continue; }
+                if (line.coeff[kind] == 0) { continue; }
+                double k = Analis::rnd(line.coeff[kind], accuracy);
+                int dt = games[i].bet_won(kind);
+                if (dt == -1)  //это означает, что информация не доступна (не известна)
+                {
+                    continue;
+                }
+                P[k] += games[i].bet_won(kind); All[k] += 1;
+                all++;
+            }
+        }
+        cout << "Вывод вероятностей всех коэффицентов с шагом E" << accuracy << " для kind = " << kind << ":" << endl;
+        for (map<double, double>::iterator i = P.begin(); i != P.end(); i++)
+        {
+            double first = (*i).first;
+            //cout << first << "->" << (*i).second << " ";
+            P[first] /= All[first];
+            //cout << P[first] << " " << All[first] << endl;
+        }
+        cout << "***************************************************" << endl;
+        for (map<double, double>::iterator i = P.begin(); i != P.end(); i++)
+        {
+            double k = (*i).first;
+            E[k] = k * (*i).second - 1;  //E[k] = p * k
+            Pos[k] = E[k] > 0;
+            const int indent = 10;
+            cout.width(indent); cout << k;
+            //cout << k << P[k] << All[k] << E[k] << Pos[k] << endl;
+            cout.width(indent); cout << P[k];
+            cout.width(indent); cout << All[k];
+            cout.width(indent); cout << E[k];
+            cout.width(indent); cout << Pos[k] << endl;
+        }
+        cout << "Количество матчей, по которым проводились расчеты: " << all << endl;
+    }
+    void analis5(void) const  //проверка на наличие бадяги в исходных данных
+    {
+        bool isOk = true;
+        for (int i = 0; i < games.size(); i++)
+        {
+            cout << "Анализ матча номер " << i << endl;
+            if (!games[i].check()) { isOk = false; }
+        }
+        if (isOk) { cout << "Проверка на бадягу успешно пройдена. Бадяги не выявлено" << endl; }
+        else { cout << "Бадяга была обнаружена. Конец провеки на бадягу" << endl; }
+    }
+    vector<Match> games;
+    map<double, int> Pk;
+private:
+    void print(vector<double> &v, int amount = 10) const
+    {
+        for (int i = 1; i < v.size()+1; i++)
+        {
+            if (i % amount == 0) { cout << endl; }
+            cout.width(5);
+            cout << v[i-1];
+        }
+        cout << endl;
+    }
+public:
+    static double rnd(double x, int k)
+    {
+        double p = pow(10, k);
+        return round(x * p) / p;
+    }
+};
 int main(int argc, char **argv)
 {
     Restruct r("data", "Matches");
     r.run();
+    Analis anal("Matches");
+    anal.analis4(1, 12.0, 2);
+    cout << "Global: " << global_counter << endl;
     return 0;
 }
